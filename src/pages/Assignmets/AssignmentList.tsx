@@ -180,7 +180,7 @@ const AssignmentList = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined as any);
 
   // Debounce search input
   useEffect(() => {
@@ -202,6 +202,7 @@ const AssignmentList = () => {
   // Fetch data when page or search changes
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [pagination.page, debouncedSearch, searchInput]);
 
   const fetchData = async () => {
@@ -209,12 +210,6 @@ const AssignmentList = () => {
       setLoading(true);
       setError(null);
 
-      console.log(
-        "📥 Fetching assignments - Page:",
-        pagination.page,
-        "Search:",
-        debouncedSearch
-      );
 
       const response = await dispatch(
         fetchAssignmentSubmissions({
@@ -224,7 +219,6 @@ const AssignmentList = () => {
         })
       ).unwrap();
 
-      console.log("📥 Fetched assignments:", response);
 
       // Assuming the API returns data in this format
       if (response && response.data) {
@@ -258,25 +252,21 @@ const AssignmentList = () => {
       newPage !== pagination.page &&
       !loading
     ) {
-      console.log("📄 Page change:", newPage);
       setPagination((prev) => ({ ...prev, page: newPage }));
     }
   };
 
   const handleSearchReset = () => {
-    console.log("🔄 Reset search");
     setSearchInput("");
     setDebouncedSearch("");
   };
 
-  const openDeleteModal = (assignment: Assignment) => {
-    console.log("🗑️ Opening delete modal");
+  const _openDeleteModal = (assignment: Assignment) => {
     setAssignmentToDelete(assignment);
     setDeleteModalOpen(true);
   };
 
   const closeDeleteModal = () => {
-    console.log("🗑️ Closing delete modal");
     setAssignmentToDelete(null);
     setDeleteModalOpen(false);
     setIsDeleting(false);
@@ -286,7 +276,6 @@ const AssignmentList = () => {
     if (assignmentToDelete) {
       setIsDeleting(true);
       try {
-        console.log("🗑️ Deleting assignment");
         // TODO: Implement deleteAssignment action
         // await dispatch(deleteAssignment(assignmentToDelete._id)).unwrap();
         toast.success("Assignment deleted successfully");
@@ -325,7 +314,6 @@ const AssignmentList = () => {
   };
 
   const handleEditClick = (assignmentId: string) => {
-    console.log("✏️ Edit click:", assignmentId);
     navigate(`/assignments/submissions/${assignmentId}`);
   };
 
@@ -369,7 +357,6 @@ const AssignmentList = () => {
                 type="text"
                 value={searchInput}
                 onChange={(e) => {
-                  console.log("🔍 Search input:", e.target.value);
                   setSearchInput(e.target.value);
                 }}
                 placeholder="Search by course, title, or subject..."

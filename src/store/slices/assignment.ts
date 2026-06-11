@@ -33,7 +33,7 @@ export const createAssignment = createAsyncThunk(
 
 export const fetchAssignments = createAsyncThunk(
   "assignment/fetchAssignments",
-  async (params?: { page?: number; limit?: number; search?: string }, { rejectWithValue }) => {
+  async (params: { page?: number; limit?: number; search?: string } | undefined, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams();
       
@@ -94,7 +94,7 @@ export const fetchAssignmentById = createAsyncThunk(
 
 export const fetchAssignmentSubmissions = createAsyncThunk(
   "assignment/fetchAssignmentSubmissions",
-  async (params?: { page?: number; limit?: number; search?: string }, { rejectWithValue }) => {
+  async (params: { page?: number; limit?: number; search?: string } | undefined, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams();
       
@@ -126,7 +126,6 @@ export const deleteAssignmentSubmission = createAsyncThunk(
       });
       return response.data;
     } catch (err: any) {
-      console.log("Error deleting assignment submission:", err?.message);
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }

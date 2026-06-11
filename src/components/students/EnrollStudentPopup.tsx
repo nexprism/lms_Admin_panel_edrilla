@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { enrollStudent, fetchAllStudents } from "../../store/slices/students";
+import { enrollStudent } from "../../store/slices/students";
 import { fetchCourses } from "../../store/slices/course";
 import { X, Search } from "lucide-react";
 import axiosInstance from "../../services/axiosConfig";
@@ -14,7 +14,7 @@ interface EnrollStudentPopupProps {
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || "https://api.edrilla.com";
 
 const EnrollStudentPopup: React.FC<EnrollStudentPopupProps> = ({ open, onClose, studentId }) => {
-  const dispatch = useAppDispatch<any>();
+  const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state: any) => state.students);
   const courseState = useAppSelector((state: any) => state.course);
 
@@ -32,7 +32,7 @@ const EnrollStudentPopup: React.FC<EnrollStudentPopupProps> = ({ open, onClose, 
   const [studentSearch, setStudentSearch] = useState("");
   const [studentOptions, setStudentOptions] = useState<any[]>([]);
   const [studentLoading, setStudentLoading] = useState(false);
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,13 +55,20 @@ const EnrollStudentPopup: React.FC<EnrollStudentPopupProps> = ({ open, onClose, 
   useEffect(() => {
     if (!open) return;
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    const trimmedSearch = studentSearch.trim();
+    // Require a minimum query before hitting the server; never fetch the full table.
+    if (trimmedSearch.length < 2) {
+      setStudentLoading(false);
+      setStudentOptions([]);
+      return;
+    }
     setStudentLoading(true);
     searchTimeout.current = setTimeout(async () => {
       try {
         const params = new URLSearchParams();
-        if (studentSearch) params.append("search", studentSearch);
+        params.append("search", trimmedSearch);
         params.append("sort", JSON.stringify({ createdAt: "desc" }));
-        params.append("limit", "200000");
+        params.append("limit", "30");
         const res = await axiosInstance.get(
           `${API_BASE_URL}/students?${params.toString()}`
         );
@@ -76,6 +83,30 @@ const EnrollStudentPopup: React.FC<EnrollStudentPopupProps> = ({ open, onClose, 
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
     };
   }, [studentSearch, open]);
+
+  // When a studentId is pre-supplied, fetch that single student so its name
+  // renders in the selected-student display even though it won't be in the
+  // small search-result page.
+  useEffect(() => {
+    if (!open || !studentId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axiosInstance.get(`${API_BASE_URL}/students/${studentId}`);
+        const student = res.data?.data?.student || res.data?.data;
+        if (!cancelled && student && student._id) {
+          setStudentOptions((prev) =>
+            prev.some((s) => s._id === student._id) ? prev : [student, ...prev]
+          );
+        }
+      } catch {
+        // Ignore; falls back to the generic "Selected Student" label.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, studentId]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -224,7 +255,7 @@ const EnrollStudentPopup: React.FC<EnrollStudentPopupProps> = ({ open, onClose, 
                 aria-describedby={localError && submitted ? "course-error" : undefined}
               >
                 <option value="">Select a course</option>
-                {courses.map((c) => (
+                {courses.map((c: any) => (
                   <option key={c._id} value={c._id}>
                     {c.title}
                   </option>

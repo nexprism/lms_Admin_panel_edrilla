@@ -11,43 +11,10 @@ import {
   updateAccessExpiry,
 } from "../../store/slices/students";
 import { fetchCourseById } from "../../store/slices/course";
-import {
-  User,
-  Mail,
-  Calendar,
-  BookOpen,
-  Award,
-  CheckCircle,
-  XCircle,
-  Phone,
-  Edit,
-  Settings,
-  FileText,
-  GraduationCap,
-  Star,
-  Clock,
-  MapPin,
-  Activity,
-  TrendingUp,
-  Download,
-  Eye,
-  Plus,
-  ArrowRight,
-  Users,
-  Target,
-  Bookmark,
-  Ban,
-  ShieldCheck,
-  Building2,
-  Save,
-  X,
-  MessageCircle,
-  Briefcase,
-  LogIn,
-} from "lucide-react";
+import { User, Mail, Calendar, BookOpen, Award, CheckCircle, XCircle, Phone, Edit, Settings, FileText, GraduationCap, Star, Activity, TrendingUp, Download, Eye, Plus, ArrowRight, Users, Ban, ShieldCheck, Building2, Save, X, MessageCircle, Briefcase, LogIn } from "lucide-react";
+import type { AppDispatch } from "../../store";
 import EnrollStudentPopup from "../../components/students/EnrollStudentPopup";
 import StudentAnalyticsTab from "./StudentAnalyticsTab";
-import { getStudentForumPosts, getStudentForumReplies, getStudentJobPosts } from "../../services/studentActivityService";
 import axiosInstance from "../../services/axiosConfig";
 import { downloadCertificateByUserAndCourse } from "../../utils/certificateDownload";
 
@@ -55,7 +22,7 @@ const ImageUrl = import.meta.env.VITE_IMAGE_URL;
 
 function StudentDetail() {
   const params = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { studentId } = params;
 
   type StudentData = {
@@ -70,8 +37,8 @@ function StudentDetail() {
     email: string;
     phone?: string;
     enrollments: any[];
-    isBanned?: string | boolean;
-    isShadowBanned?: string | boolean;
+    isBanned?: boolean;
+    isShadowBanned?: boolean;
     status?: string;
     banReason?: string;
     bio?: string;
@@ -99,7 +66,7 @@ function StudentDetail() {
 
   const [data, setData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
   const [enrollPopupOpen, setEnrollPopupOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -160,8 +127,8 @@ function StudentDetail() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await dispatch(fetchStudentById(studentId));
-        setData(response.payload);
+        const student = await dispatch(fetchStudentById(studentId!)).unwrap();
+        setData(student as any);
       } catch (error) {
         console.error("Error fetching student details:", error);
         setError("Failed to load student details");
@@ -191,7 +158,6 @@ function StudentDetail() {
           setForumPosts(forumPostsResponse.data?.data || forumPostsResponse.data?.threads || []);
         } catch (error) {
           // If admin endpoint doesn't exist, try alternative approach
-          console.log("Admin endpoint not available, trying alternative...");
           setForumPosts([]);
         }
 
@@ -202,7 +168,6 @@ function StudentDetail() {
           });
           setForumReplies(forumRepliesResponse.data?.data || forumRepliesResponse.data?.replies || []);
         } catch (error) {
-          console.log("Forum replies endpoint not available");
           setForumReplies([]);
         }
 
@@ -220,7 +185,6 @@ function StudentDetail() {
             });
             setJobPosts(altResponse.data?.data || []);
           } catch (err) {
-            console.log("Job posts endpoint not available");
             setJobPosts([]);
           }
         }
@@ -241,7 +205,7 @@ function StudentDetail() {
     const fetchModules = async () => {
       if (moduleDripPopup?.courseId) {
         try {
-          const response = await dispatch(fetchCourseById({ courseId: moduleDripPopup.courseId })).unwrap();
+          const response = await dispatch(fetchCourseById({ courseId: moduleDripPopup.courseId } as any)).unwrap();
           const modules = response?.modules || response?.data?.modules || [];
           setCourseModules(modules);
         } catch (e) {
@@ -314,14 +278,27 @@ function StudentDetail() {
     if (!data?._id) return;
     setBanLoading(true);
     try {
+      const appliedReason = banReason || "No reason provided";
       await dispatch(banStudent({
         userId: data._id,
         banType,
-        banReason: banReason || "No reason provided",
+        banReason: appliedReason,
       })).unwrap();
+      // Mirror backend semantics locally instead of reloading the page
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: banType,
+              banReason: appliedReason,
+              isBanned: banType === "ban",
+              isShadowBanned: banType === "shadowBan",
+              isActive: banType !== "ban",
+            }
+          : prev
+      );
       setToast({ message: "Student banned successfully.", type: "success" });
       closeBanModal();
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       setToast({ message: "Failed to ban student.", type: "error" });
       setBanLoading(false);
@@ -332,8 +309,20 @@ function StudentDetail() {
     setBanLoading(true);
     try {
       await dispatch(unbanStudent({ userId: data._id })).unwrap();
+      // Mirror backend semantics locally instead of reloading the page
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "active",
+              banReason: undefined,
+              isBanned: false,
+              isShadowBanned: false,
+              isActive: true,
+            }
+          : prev
+      );
       setToast({ message: "Student unbanned successfully.", type: "success" });
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       setToast({ message: "Failed to unban student.", type: "error" });
     } finally {
@@ -432,7 +421,7 @@ function StudentDetail() {
     );
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -440,7 +429,7 @@ function StudentDetail() {
     });
   };
 
-  const StatusBadge = ({ verified, label, icon: Icon }) => (
+  const StatusBadge = ({ verified, label, icon: Icon }: any) => (
     <div
       className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${verified
         ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
@@ -452,7 +441,7 @@ function StudentDetail() {
     </div>
   );
 
-  const StatCard = ({ icon: Icon, title, value, subtitle, color = "blue" }) => (
+  const StatCard = ({ icon: Icon, title, value, subtitle, color = "blue" }: any) => (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
       <div className="flex sm:flex-row items-center sm:items-center justify-between gap-4">
         <div>
@@ -525,7 +514,7 @@ function StudentDetail() {
                   Enroll in Course
                 </button>
                 {/* Ban/Unban Button */}
-                {(data.isBanned === true || data.isBanned === "true" || data.isShadowBanned === true || data.isShadowBanned === "true") ? (
+                {(data.isBanned || data.isShadowBanned) ? (
                   <button
                     onClick={handleUnban}
                     className="inline-flex items-center px-6 py-3 border border-yellow-500 rounded-xl shadow-sm text-sm font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-all duration-200"
@@ -1181,7 +1170,7 @@ function StudentDetail() {
               </h3>
               {(() => {
                 // Parse skills from different formats
-                const parseSkills = (skills) => {
+                const parseSkills = (skills: any) => {
                   if (!skills) return [];
                   if (Array.isArray(skills)) {
                     // If it's an array, flatten any comma-separated strings
@@ -1270,9 +1259,9 @@ function StudentDetail() {
                 <GraduationCap className="mr-2 h-5 w-5 text-purple-500" />
                 Education History
               </h3>
-              {data.education?.length > 0 ? (
+              {(data.education?.length as number) > 0 ? (
                 <div className="space-y-4">
-                  {data.education.map((edu, index) => (
+                  {data.education!.map((edu, index) => (
                     <div
                       key={index}
                       className="border-l-4 border-purple-500 pl-4 py-2 hover:bg-gray-50 transition-colors duration-200 rounded-r-lg"
@@ -1304,9 +1293,9 @@ function StudentDetail() {
                 <FileText className="mr-2 h-5 w-5 text-indigo-500" />
                 Documents
               </h3>
-              {data.documentation?.length > 0 ? (
+              {(data.documentation?.length as number) > 0 ? (
                 <div className="space-y-3">
-                  {data.documentation.map((doc, index) => (
+                  {data.documentation!.map((doc, index) => (
                     <div
                       key={index}
                       className="flex sm:flex-row items-center sm:items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"

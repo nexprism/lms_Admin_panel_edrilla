@@ -1,22 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  createTextLesson,
-  updateTextLesson,
-} from "../../../store/slices/textLesson"; // Adjust import path as needed
+import type { AppDispatch } from "../../../store";
+import { updateTextLesson } from "../../../store/slices/textLesson"; // Adjust import path as needed
 import PopupAlert from "../../../components/popUpAlert";
 import { useParams } from "react-router";
 import axiosInstance from "../../../services/axiosConfig";
 
 const EditTextLessonEditor = ({
-  section,
-  lesson,
-  onChange,
+  section: _section,
+  lesson: _lesson,
+  onChange: _onChange,
   courseId,
   lessonId,
-}) => {
-  const dispatch = useDispatch();
-  const { loading, error, data } = useSelector((state) => state.textLesson);
+}: any) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error, data } = useSelector((state) => (state as any).textLesson);
   const [popup, setPopup] = useState({
     isVisible: false,
     message: "",
@@ -30,22 +28,21 @@ const EditTextLessonEditor = ({
     title: "",
     bookTitle: "",
     accessibility: "free",
-    attachments: [],
+    attachments: [] as any[],
     summary: "",
     content: "",
   });
 
   const [titleCharCount, setTitleCharCount] = useState(0);
-  const [bookTitleCharCount, setBookTitleCharCount] = useState(0);
+  const [_bookTitleCharCount, setBookTitleCharCount] = useState(0);
   const [archive, setArchive] = useState(true);
   const [dropContent, setDropContent] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [courseIds, setCourseId] = useState(courseId || "");
   const [lessonIds, setLessonId] = useState(lessonId || "");
 
-  const quillRef = useRef(null);
-  ``;
-  const editorRef = useRef(null);
+  const quillRef = useRef<any>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const getData = async () => {
     try {
@@ -61,10 +58,9 @@ const EditTextLessonEditor = ({
         summary: data.summary || "",
         content: data.content || "",
       });
-      editorRef.current.innerHTML = data.content || "";
+      editorRef.current!.innerHTML = data.content || "";
       setCourseId(data.course);
       setLessonId(data.lesson);
-      console.log("Fetched assignment data:", data);
     } catch (error) {
       console.error("Failed to fetch assignment data:", error);
       setPopup({
@@ -77,12 +73,13 @@ const EditTextLessonEditor = ({
 
   useEffect(() => {
     getData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [lessionID]);
 
   useEffect(() => {
     // Load Quill dynamically
     const loadQuill = async () => {
-      if (typeof window !== "undefined" && !window.Quill) {
+      if (typeof window !== "undefined" && !(window as any).Quill) {
         // Load Quill CSS
         const link = document.createElement("link");
         link.href =
@@ -96,14 +93,14 @@ const EditTextLessonEditor = ({
           "https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js";
         script.onload = initializeQuill;
         document.head.appendChild(script);
-      } else if (window.Quill) {
+      } else if ((window as any).Quill) {
         initializeQuill();
       }
     };
 
     const initializeQuill = () => {
       if (editorRef.current && !quillRef.current) {
-        quillRef.current = new window.Quill(editorRef.current, {
+        quillRef.current = new (window as any).Quill(editorRef.current, {
           theme: "snow",
           placeholder: "Start writing your lesson content...",
           modules: {
@@ -148,7 +145,7 @@ const EditTextLessonEditor = ({
     }
   }, [data, loading, error]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: any, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === "title") {
@@ -158,7 +155,7 @@ const EditTextLessonEditor = ({
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = (event: any) => {
     const files = Array.from(event.target.files);
     setFormData((prev) => ({
       ...prev,
@@ -166,7 +163,7 @@ const EditTextLessonEditor = ({
     }));
   };
 
-  const removeAttachment = (index) => {
+  const removeAttachment = (index: any) => {
     setFormData((prev) => ({
       ...prev,
       attachments: prev.attachments.filter((_, i) => i !== index),
@@ -573,7 +570,7 @@ const EditTextLessonEditor = ({
       </div>
       <PopupAlert
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ ...popup, isVisible: false })}
       />

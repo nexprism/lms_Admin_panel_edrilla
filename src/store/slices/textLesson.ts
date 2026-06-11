@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 interface TextLessonState {
@@ -124,7 +123,7 @@ const textLessonSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateTextLesson.fulfilled, (state, action) => {
+      .addCase(updateTextLesson.fulfilled, (state, _action) => {
         state.loading = false;
         // Optionally update the specific lesson in the state
         // state.data = state.data.map((lesson: any) =>
@@ -139,7 +138,7 @@ const textLessonSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchTextLessonById.fulfilled, (state, action) => {
+      .addCase(fetchTextLessonById.fulfilled, (state, _action) => {
         state.loading = false;
         // state.data = action.payload;
       })

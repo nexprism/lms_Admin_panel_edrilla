@@ -69,7 +69,6 @@ export const fetchFilter = createAsyncThunk<
             `${baseUrl}/filter/?${queryParams.toString()}`
         );
 
-        console.log('Response from fetchFilter:', response.data);
 
         const data = response.data?.data?.filters;
         return {
@@ -192,7 +191,7 @@ const filterSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateFilter.fulfilled, (state, action: PayloadAction<any>) => {
+            .addCase(updateFilter.fulfilled, (state, _action: PayloadAction<any>) => {
                 state.loading = false;
                 // Optionally handle the updated filter data
             })
@@ -204,7 +203,7 @@ const filterSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(deleteFilter.fulfilled, (state, action: PayloadAction<any>) => {
+            .addCase(deleteFilter.fulfilled, (state, _action: PayloadAction<any>) => {
                 state.loading = false;
                 // Optionally handle the deleted filter data
             })
@@ -216,7 +215,7 @@ const filterSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(postFilter.fulfilled, (state, action: PayloadAction<any>) => {
+            .addCase(postFilter.fulfilled, (state, _action: PayloadAction<any>) => {
                 state.loading = false;
                 // Optionally handle the posted filter data
             })

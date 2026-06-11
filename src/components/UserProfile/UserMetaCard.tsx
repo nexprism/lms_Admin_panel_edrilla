@@ -5,10 +5,9 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 
 export default function UserMetaCard() {
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen, openModal: _openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
-    console.log("Saving changes...");
     closeModal();
   };
   return (

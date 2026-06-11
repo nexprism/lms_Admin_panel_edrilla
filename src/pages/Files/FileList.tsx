@@ -2,18 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboard } from "../../store/slices/anayltics";
 import { RootState, AppDispatch } from "../../store";
-import {
-  RefreshCw,
-  Calendar,
-  Eye,
-  Clock,
-  Users,
-  TrendingUp,
-  ChevronUp,
-  ChevronDown,
-  Search,
-  User,
-} from "lucide-react";
+import { RefreshCw, Eye, Clock, Users, TrendingUp, ChevronUp, ChevronDown, Search, User } from "lucide-react";
 
 const VideoAnalyticsDashboard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -182,12 +171,12 @@ const VideoAnalyticsDashboard = () => {
                 </thead>
                 <tbody>
                   {dashboard.videoPerformance
-                    ?.filter((video) =>
+                    ?.filter((video: any) =>
                       video.title
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase())
                     )
-                    .map((video) => (
+                    .map((video: any) => (
                       <tr
                         key={video.id}
                         className="hover:bg-gray-50 transition"
@@ -237,7 +226,7 @@ const VideoAnalyticsDashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-white/[0.03] divide-y divide-gray-200">
-                      {dashboard.userEngagement?.map((user) => (
+                      {dashboard.userEngagement?.map((user: any) => (
                         <tr
                           key={user.userId}
                           className="hover:bg-gray-50 hover:dark:bg-white/[0.06] transition-colors duration-200"

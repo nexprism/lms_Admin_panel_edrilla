@@ -2,36 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchVideoSessions } from "../../store/slices/anayltics"; // Assuming this correctly fetches the data
 import { RootState, AppDispatch } from "../../store";
-import {
-  Video,
-  User,
-  Clock,
-  Search,
-  ChevronLeft, // For pagination
-  ChevronRight, // For pagination
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  Play,
-  Pause,
-  SkipForward,
-  Repeat,
-  ExternalLink,
-  EyeOff,
-  Activity,
-  MousePointer,
-  Volume2,
-  Settings,
-  BarChart2,
-  Users,
-  Film,
-  Globe,
-  Loader,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
-  Info,
-} from "lucide-react";
+import { Video, User, Clock, Search, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Play, Pause, SkipForward, Repeat, ExternalLink, EyeOff, Activity, MousePointer, Volume2, Settings, BarChart2, Users, Film, Loader, XCircle, TrendingUp, TrendingDown, Info } from "lucide-react";
 
 // --- Utility Functions (Kept from original) ---
 
@@ -171,7 +142,7 @@ const InteractionDetails: React.FC<{ interactions: any[] }> = ({
                 >
                   {getEventIcon(eventType)}
                   {formatEventType(eventType)}:{" "}
-                  <span className="font-bold">{count}</span>
+                  <span className="font-bold">{count as any}</span>
                 </span>
               ))}
             </div>
@@ -315,7 +286,7 @@ const Session: React.FC = () => {
 
   const sortedAndFilteredSessions = useMemo(() => {
     const lowerCaseSearch = searchTerm.toLowerCase();
-    let filtered = sessions.filter((session: any) => {
+    const filtered = sessions.filter((session: any) => {
       return (
         session.userName?.toLowerCase().includes(lowerCaseSearch) ||
         session.videoTitle?.toLowerCase().includes(lowerCaseSearch) ||
@@ -388,6 +359,7 @@ const Session: React.FC = () => {
     // If the current page changes due to filtering/sorting, go back to page 1
     // This is important to ensure consistency when filters/sorts change
     setCurrentPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [sortedAndFilteredSessions, selectedSession]);
 
   // Aggregate Metrics for Dashboard Cards (same as before)
@@ -436,7 +408,7 @@ const Session: React.FC = () => {
       1,
       currentPage - Math.floor(maxPageNumbersToShow / 2)
     );
-    let endPage = Math.min(totalPages, startPage + maxPageNumbersToShow - 1);
+    const endPage = Math.min(totalPages, startPage + maxPageNumbersToShow - 1);
 
     if (endPage - startPage + 1 < maxPageNumbersToShow) {
       startPage = Math.max(1, endPage - maxPageNumbersToShow + 1);

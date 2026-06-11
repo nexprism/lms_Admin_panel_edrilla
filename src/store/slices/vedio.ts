@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 interface VideoState {
@@ -27,8 +26,8 @@ export const uploadVideo = createAsyncThunk(
       uploadMethod,
       videoId,
       youtubeUrl,
-      accessToken,
-      refreshToken,
+      accessToken: _accessToken,
+      refreshToken: _refreshToken,
     }: {
       filePath: string;
       lessonId: string;
@@ -121,8 +120,8 @@ export const updateVideo = createAsyncThunk(
       thumbnail,
       replaceVideo,
       vdocipherVideoId,
-      accessToken,
-      refreshToken,
+      accessToken: _accessToken,
+      refreshToken: _refreshToken,
     }: {
       videoId: string;
       file?: File;

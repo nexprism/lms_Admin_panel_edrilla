@@ -1,29 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { 
-  Upload, 
-  File, 
-  X, 
-  ChevronDown, 
-  FileText,
-  Image,
-  Video,
-  Download,
-  Eye,
-  Globe,
-  Lock,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Info,
-  XCircle,
-  Sparkles,
-  FileUp,
-  ExternalLink,
-  Calendar,
-  User,
-  FileIcon
-} from "lucide-react";
+import { Upload, X, ChevronDown, FileText, Image, Video, Download, Eye, Globe, CheckCircle2, AlertCircle, Clock, Info, XCircle, Sparkles, FileUp, Calendar, FileIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../store";
 import {
   uploadFile,
   fetchFileById,
@@ -32,7 +10,7 @@ import {
 } from "../../../store/slices/files";
 
 // Enhanced popup component with better animations
-const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }) => {
+const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }: any) => {
   useEffect(() => {
     if (isVisible && autoClose && type === "success") {
       const timer = setTimeout(() => {
@@ -108,7 +86,7 @@ const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }) 
 };
 
 // Upload progress component
-const UploadProgress = ({ isVisible, progress, fileName, stage }) => {
+const UploadProgress = ({ isVisible, progress, fileName, stage }: any) => {
   if (!isVisible) return null;
 
   return (
@@ -152,8 +130,8 @@ const UploadProgress = ({ isVisible, progress, fileName, stage }) => {
 };
 
 // File Preview Component
-const FilePreview = ({ file, onDownload }) => {
-  const getFileIcon = (fileType) => {
+const FilePreview = ({ file, onDownload: _onDownload }: any) => {
+  const getFileIcon = (fileType: any) => {
     switch (fileType) {
       case "PDF":
         return <FileText className="w-8 h-8 text-red-600" />;
@@ -170,13 +148,13 @@ const FilePreview = ({ file, onDownload }) => {
 
   const getFileName = () => {
     if (file.filePath) {
-      const pathParts = file.filePath.split(/[\\\/]/);
+      const pathParts = file.filePath.split(/[\\/]/);
       return pathParts[pathParts.length - 1];
     }
     return "Unknown file";
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -296,17 +274,17 @@ const FilePreview = ({ file, onDownload }) => {
 };
 
 export default function FileUploadForm({
-  section,
+  section: _section,
   lesson,
-  onChange,
+  onChange: _onChange,
   courseId,
   lessonId,
   fileId,
   contentId,
   onSaveSuccess,
   onClose,
-}) {
-  const [selectedFiles, setSelectedFiles] = useState([]);
+}: any) {
+  const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [selectedFileType, setSelectedFileType] = useState("Select file type");
@@ -331,23 +309,19 @@ export default function FileUploadForm({
   const [hasPerformedUpdate, setHasPerformedUpdate] = useState(false);
   const [currentFileData, setCurrentFileData] = useState(null);
   
-  console.log("FileUploadForm rendered with fileId:", fileId);
-  console.log("contentId:", contentId);
-  console.log("lessonId:", lessonId);
-  console.log("courseId:", courseId);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const actualFileId = fileId || contentId;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const {
     uploading,
     error,
     success,
     file: fetchedFile,
-  } = useSelector((state) => state.file);
+  } = useSelector((state) => (state as any).file);
 
   const languages = [
     "English",
@@ -390,7 +364,7 @@ export default function FileUploadForm({
     return selectedType ? selectedType.accept : "";
   };
 
-  const validateFileType = (file) => {
+  const validateFileType = (file: any) => {
     const selectedType = fileTypes.find(type => type.value === selectedFileType);
     if (!selectedType) return false;
 
@@ -398,13 +372,13 @@ export default function FileUploadForm({
     return selectedType.extensions.includes(fileExtension || "");
   };
 
-  const filterValidFiles = (files) => {
+  const filterValidFiles = (files: any[]) => {
     if (selectedFileType === "Select file type") {
       return files;
     }
 
-    const validFiles = files.filter(file => validateFileType(file));
-    const invalidFiles = files.filter(file => !validateFileType(file));
+    const validFiles = files.filter((file: any) => validateFileType(file));
+    const invalidFiles = files.filter((file: any) => !validateFileType(file));
 
     if (invalidFiles.length > 0) {
       const selectedType = fileTypes.find(type => type.value === selectedFileType);
@@ -420,7 +394,7 @@ export default function FileUploadForm({
     return validFiles;
   };
 
-  const simulateUpload = (fileName) => {
+  const simulateUpload = (fileName: any) => {
     setUploadProgress({
       isVisible: true,
       progress: 0,
@@ -480,11 +454,11 @@ export default function FileUploadForm({
         setSelectedFiles(validFiles);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [selectedFileType]);
 
   useEffect(() => {
     const loadData = async () => {
-      console.log("Loading data with actualFileId:", actualFileId);
       setHasPerformedUpdate(false);
       dispatch(clearFileState());
       
@@ -492,7 +466,6 @@ export default function FileUploadForm({
         setIsEditMode(true);
         try {
           const response = await dispatch(fetchFileById(actualFileId)) as any;
-          console.log("Fetched file response:", response);
           
           let data;
           if (response.payload?.data) {
@@ -503,7 +476,6 @@ export default function FileUploadForm({
             data = response;
           }
           
-          console.log("Processing file data:", data);
           
           // Set form values from fetched data
           setSelectedLanguage(data.language || "English");
@@ -516,7 +488,6 @@ export default function FileUploadForm({
           
           // Force re-render to show file preview
           setTimeout(() => {
-            console.log("File data loaded for preview:", data);
           }, 100);
           
         } catch (err) {
@@ -573,17 +544,17 @@ export default function FileUploadForm({
     }
   }, [success, error, uploading, isEditMode, onSaveSuccess, justMounted, hasPerformedUpdate]);
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
     
@@ -601,7 +572,7 @@ export default function FileUploadForm({
     setSelectedFiles((prev) => [...prev, ...validFiles]);
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (selectedFileType === "Select file type") {
       setPopup({
         isVisible: true,
@@ -619,7 +590,7 @@ export default function FileUploadForm({
     setSelectedFiles((prev) => [...prev, ...validFiles]);
   };
 
-  const removeFile = (index) => {
+  const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -632,14 +603,12 @@ export default function FileUploadForm({
   };
 
   const handleUploadOrUpdate = async () => {
-    console.log("file upload or update called");
     if (!isEditMode && selectedFiles.length === 0) {
       setPopup({
         isVisible: true,
         message: "Please select files to upload",
         type: "error",
       });
-      console.log("return from handleUploadOrUpdate 1");
       return;
     }
     if (selectedFileType === "Select file type") {
@@ -648,12 +617,8 @@ export default function FileUploadForm({
         message: "Please select a file type",
         type: "error",
       });
-      console.log("return from handleUploadOrUpdate 2");
       return;
     }
-    console.log("Selected files:", selectedFiles);
-    console.log("isEditMode:", isEditMode);
-    console.log("Actual File ID:", actualFileId);
 
     if (!isEditMode && selectedFiles.length > 0) {
       simulateUpload(selectedFiles[0].name);
@@ -763,9 +728,6 @@ export default function FileUploadForm({
 
         {/* Content */}
         <div className="p-6 space-y-6 pb-36">
-          {/* Debug info - remove this after testing */}
-          {console.log("Debug - isEditMode:", isEditMode, "fetchedFile:", fetchedFile, "currentFileData:", currentFileData)}
-          
           {/* File Preview - Show in edit mode when we have file data */}
           {isEditMode && (fetchedFile || currentFileData) && (
             <FilePreview 
@@ -889,7 +851,7 @@ export default function FileUploadForm({
                 <p className="text-sm text-gray-500">
                   Drag and drop files here or{" "}
                   <button
-                    onClick={() => fileInputRef.current.click()}
+                    onClick={() => fileInputRef.current!.click()}
                     className="text-blue-600 hover:underline"
                   >
                     select files

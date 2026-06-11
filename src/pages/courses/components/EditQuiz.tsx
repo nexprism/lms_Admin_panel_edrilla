@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  BookOpen,
-  FileText,
-  Clock,
-  CheckCircle,
-  Plus,
-  Edit2,
-  Trash2,
-  X,
-  Save,
-  HelpCircle,
-  AlertCircle,
-  Eye,
-  Settings,
-} from "lucide-react";
-import { createQuiz, upadateQuiz } from "../../../store/slices/quiz"; // Adjust the import path as needed
+import { BookOpen, Clock, CheckCircle, Plus, Edit2, Trash2, X, Save, HelpCircle, AlertCircle, Eye, Settings } from "lucide-react";
+import { upadateQuiz } from "../../../store/slices/quiz"; // Adjust the import path as needed
 import PopupAlert from "../../../components/popUpAlert";
 import { useParams } from "react-router";
 import axiosInstance from "../../../services/axiosConfig";
@@ -34,7 +20,7 @@ type LessonType = {
   questions?: QuestionType[];
 };
 
-type QuizProps = {
+type _QuizProps = {
   lesson?: LessonType;
   onChange?: (data: LessonType) => void;
   courseId: string; // Required for API call
@@ -50,7 +36,7 @@ interface RootState {
   };
 }
 
-const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
+const EditQuiz = ({ section: _section, lesson, onChange, courseId: _courseId, lessonId: _lessonId }: any) => {
   const dispatch = useDispatch();
   const {
     loading: saving,
@@ -74,7 +60,7 @@ const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
     passMark: 70,
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [popup, setPopup] = useState({
+  const [_popup, setPopup] = useState({
     isVisible: false,
     message: "",
     type: "",
@@ -93,7 +79,6 @@ const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
         passMark: data.passMark || 70,
       });
       setQuestions(data.questions || []);
-      console.log("Fetched quiz data:", response.data);
     } catch (error) {
       console.error("Failed to fetch quiz data:", error);
       setPopup({
@@ -106,6 +91,7 @@ const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [quizId]);
 
   // Handle save success
@@ -147,7 +133,7 @@ const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
     };
 
     try {
-      await dispatch(upadateQuiz(payload) as any);
+      await dispatch(upadateQuiz(payload as any) as any);
       // Show success popup
       setPopup({
         isVisible: true,
@@ -381,7 +367,7 @@ const EditQuiz = ({ section, lesson, onChange, courseId, lessonId }) => {
   );
 };
 
-const QuestionCard = ({ question, index, onEdit, onDelete }) => {
+const QuestionCard = ({ question, index, onEdit, onDelete }: any) => {
   const [showPreview, setShowPreview] = useState(false);
 
   return (
@@ -431,7 +417,7 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
       {showPreview && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="space-y-2">
-            {question.options?.map((option, idx) => (
+            {question.options?.map((option: any, idx: number) => (
               <div
                 key={idx}
                 className={`p-2 rounded border ${
@@ -456,7 +442,7 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
   );
 };
 
-const QuestionBuilder = ({ question, onSave, onClose }) => {
+const QuestionBuilder = ({ question, onSave, onClose }: any) => {
   const [formData, setFormData] = useState({
     question: question?.question || "",
     options: question?.options || ["", "", "", ""],
@@ -468,7 +454,7 @@ const QuestionBuilder = ({ question, onSave, onClose }) => {
     type: "",
   });
 
-  const handleOptionChange = (index, value) => {
+  const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...formData.options];
     newOptions[index] = value;
     setFormData({ ...formData, options: newOptions });
@@ -483,9 +469,9 @@ const QuestionBuilder = ({ question, onSave, onClose }) => {
     }
   };
 
-  const removeOption = (index) => {
+  const removeOption = (index: number) => {
     if (formData.options.length > 2) {
-      const newOptions = formData.options.filter((_, i) => i !== index);
+      const newOptions = formData.options.filter((_: any, i: number) => i !== index);
       setFormData({
         ...formData,
         options: newOptions,
@@ -502,7 +488,7 @@ const QuestionBuilder = ({ question, onSave, onClose }) => {
       alert("Please enter a question");
       return;
     }
-    const filledOptions = formData.options.filter((opt) => opt.trim());
+    const filledOptions = formData.options.filter((opt: any) => opt.trim());
     if (filledOptions.length < 2) {
       alert("Please provide at least 2 options");
       return;
@@ -568,7 +554,7 @@ const QuestionBuilder = ({ question, onSave, onClose }) => {
               )}
             </div>
             <div className="space-y-3">
-              {formData.options.map((option, index) => (
+              {formData.options.map((option: any, index: number) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="flex items-center">
                     <input
@@ -636,7 +622,7 @@ const QuestionBuilder = ({ question, onSave, onClose }) => {
       </div>
       <PopupAlert
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ ...popup, isVisible: false })}
       />

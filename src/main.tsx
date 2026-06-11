@@ -1,8 +1,10 @@
+import "./setupFetch.ts";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import "swiper/swiper-bundle.css";
-import "flatpickr/dist/flatpickr.css";
+// swiper CSS removed: no swiper component is rendered anywhere in src/.
+// flatpickr CSS is imported by its only consumer, components/form/date-picker.tsx,
+// so it loads with that lazy chunk instead of on every page.
 import App from "./App.tsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";

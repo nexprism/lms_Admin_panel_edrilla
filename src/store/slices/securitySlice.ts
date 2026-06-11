@@ -15,7 +15,9 @@ export const fetchIncidents = createAsyncThunk(
       });
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: error.message || 'Failed to fetch incidents' }
+      );
     }
   }
 );

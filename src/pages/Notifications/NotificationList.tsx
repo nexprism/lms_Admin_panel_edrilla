@@ -3,19 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchNotifications, setFilters, clearFilters } from "../../store/slices/notification";
 import { fetchCourses } from "../../store/slices/course";
 import { RootState } from "../../store";
-import { 
-  Bell, 
-  Filter, 
-  Search, 
-  RefreshCw, 
-  Eye,
-  Calendar,
-  User,
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw
-} from "lucide-react";
+import { Bell, Filter, Search, RefreshCw, Calendar, User, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 
@@ -29,7 +17,7 @@ const NotificationList: React.FC = () => {
     filters 
   } = useSelector((state: RootState) => state.notification);
   const { data: courseData, loading: coursesLoading } = useSelector((state: RootState) => state.course);
-  const token = useSelector((state: RootState) => state.auth.token);
+  const token = useSelector((state: RootState) => state.auth.token) as string;
 
   const [localFilters, setLocalFilters] = useState({
     status: '',
@@ -39,8 +27,6 @@ const NotificationList: React.FC = () => {
     search: '',
   });
 
-  console.log("Notifications from Redux:", notifications);
-  console.log("Pagination from Redux:", pagination);
 
   useEffect(() => {
     if (token) {

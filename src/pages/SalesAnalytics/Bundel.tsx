@@ -2,23 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../store";
 import { fetchBundleSalesAnalytics } from "../../store/slices/salesAnalyticsSlice";
-import {
-  Package,
-  ShoppingCart,
-  TrendingUp,
-  Search,
-  SortAsc,
-  SortDesc,
-  Filter,
-  Loader,
-  XCircle,
-  Eye,
-  Award,
-  Target,
-  Activity,
-  BarChart2,
-  Gift,
-} from "lucide-react";
+import { Package, ShoppingCart, TrendingUp, Search, SortAsc, SortDesc, Filter, Loader, XCircle, Eye, Award, Target, BarChart2, Gift } from "lucide-react";
 
 interface BundleData {
   _id: string;
@@ -82,7 +66,7 @@ const Bundle: React.FC = () => {
   const filteredAndSortedBundles = useMemo(() => {
     if (!bundleData || !Array.isArray(bundleData)) return [];
 
-    let filtered = bundleData.filter((bundle) =>
+    const filtered = bundleData.filter((bundle) =>
       bundle.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

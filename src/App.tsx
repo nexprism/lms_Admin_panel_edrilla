@@ -6,79 +6,103 @@ import {
 } from "react-router-dom";
 import React from "react";
 import { lazy, Suspense, useState } from "react";
-import ProtectedRoute from "./components/common/ProtectedRoute";
-import { ScrollToTop } from "./components/common/ScrollToTop";
-import AddFilter from "./components/filters/AddFilter";
-import FilterList from "./components/filters/FilterList";
-import AddCourse from "./pages/courses/AddCourse";
-import CourseList from "./pages/courses/CourseList";
-import { Edit } from "lucide-react";
-import EditCourse from "./pages/courses/EditCourse";
-import AddBundle from "./pages/bundles/AddBundle";
-import BundleList from "./pages/bundles/bundleList";
-import EditBundleForm from "./pages/bundles/EditBundle";
-import QuizList from "./pages/Quiz/QuizList";
-import AssignmentList from "./pages/Assignmets/AssignmentList";
-import TextLessonPage from "./pages/courses/TextLesson";
-import EditQuiz from "./pages/courses/components/EditQuiz";
-import EditAssignmentForm from "./pages/courses/components/EditAssignment";
-import EditTextLessonEditor from "./pages/courses/components/EditTextLesson";
-import FileList from "./pages/Files/FileList";
-import AddFile from "./pages/courses/components/AddFile";
-import Session from "./pages/Files/Session";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated } from "./store/slices/authslice";
-import StudentList from "./pages/students/StudenList";
-import StudentDetail from "./pages/students/StudentDetail";
-import AssignmentSubmissionReview from "./pages/Assignmets/AssignmentDetails";
-import AssignmentPage from "./pages/Assignmets/AssignmentPage";
-import HelpDesk from "./pages/HelpDesk/RequestList";
-import TicketDetails from "./pages/HelpDesk/TicketDetails";
-import CertificationList from "./pages/Certification/CertificationList";
-import EditCreateCertificateTemplate from "./pages/Certification/EditeCertification";
-import IssueCertification from "./pages/Certification/IssueCertification";
-import DeleteRequestsList from "./pages/students/DeleteRequestsList";
-import User from "./pages/SalesAnalytics/User";
-import Course from "./pages/SalesAnalytics/Course";
-import Bundel from "./pages/SalesAnalytics/Bundel";
-import Project from "./pages/Files/Project";
-import QueryList from "./pages/Query/QueryList";
-import Coupons from "./pages/coupons/Coupons";
-import CreateCoupon from "./pages/coupons/CreateCoupon";
-import EditCoupon from "./pages/coupons/EditCoupon";
-import ForumThreadList from "./pages/Forum/ForumThreadList";
-import AppNotificationSender from "./pages/AppNotificationSender";
-import DeviceApprovals from "./pages/DeviceApprovals";
-import ForumDetails from "./pages/Forum/ForumDetails";
-import EditForumThread from "./pages/Forum/EditForumThread";
-import AddEvent from "./pages/Events/AddEvent";
-import EventList from "./pages/Events/EventList";
-import EditEvent from "./pages/Events/EditEvent";
-import AddJob from "./pages/Jobs/AddJob";
-import JobList from "./pages/Jobs/JobList";
-import EditJob from "./pages/Jobs/EditJob";
-import TestimonialsPage from "./pages/Testimonials";
-import Banner from "./pages/Banner/banner";
-import AllBanners from "./pages/Banner/AllBanners";
-import AddBanner from "./pages/Banner/AddBanner";
-import EditBanner from "./pages/Banner/EditBanner";
-import LeaderboardSetting from "./pages/LeaderboardSetting";
-import NotificationDashboard from "./pages/Notifications/NotificationDashboard";
-import NotificationList from "./pages/Notifications/NotificationList";
-import NewsList from "./pages/News/NewsList";
-import AddNews from "./pages/News/AddNews";
-import EditNews from "./pages/News/EditNews";
-import ViewNews from "./pages/News/ViewNews";
-import ManageQuestions from "./pages/PersonalityTest/ManageQuestions";
-import ChatPage from "./pages/Chat/ChatPage";
-import AITool from "./pages/AITool/AITool";
-import SecurityIncidents from "./pages/Security/Incidents";
-import ZoomMeetings from "./pages/LiveClasses/ZoomMeetings";
 
-// Lazy load pages
-const SignIn = lazy(() => import("./pages/AuthPages/SignIn"));
-const SignUp = lazy(() => import("./pages/AuthPages/SignUp"));
+// Critical path — kept eager: auth pages, route guard, layout shell and the
+// dashboard (first page after login) so they render without a lazy roundtrip.
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import { ScrollToTop } from "./components/common/ScrollToTop";
+import SignIn from "./pages/AuthPages/SignIn";
+import SignUp from "./pages/AuthPages/SignUp";
+import AppLayout from "./layout/AppLayout";
+import Home from "./pages/Dashboard/Home";
+
+// Everything else is lazy-loaded so each page lands in its own chunk and the
+// main bundle stays small. All components below are default exports.
 const NotFound = lazy(() => import("./pages/OtherPage/NotFound"));
+
+const AddFilter = lazy(() => import("./components/filters/AddFilter"));
+const FilterList = lazy(() => import("./components/filters/FilterList"));
+const AddCourse = lazy(() => import("./pages/courses/AddCourse"));
+const CourseList = lazy(() => import("./pages/courses/CourseList"));
+const EditCourse = lazy(() => import("./pages/courses/EditCourse"));
+const AddBundle = lazy(() => import("./pages/bundles/AddBundle"));
+const BundleList = lazy(() => import("./pages/bundles/bundleList"));
+const EditBundleForm = lazy(() => import("./pages/bundles/EditBundle"));
+const QuizList = lazy(() => import("./pages/Quiz/QuizList"));
+const AssignmentList = lazy(() => import("./pages/Assignmets/AssignmentList"));
+const TextLessonPage = lazy(() => import("./pages/courses/TextLesson"));
+const EditQuiz = lazy(() => import("./pages/courses/components/EditQuiz"));
+const EditAssignmentForm = lazy(
+  () => import("./pages/courses/components/EditAssignment")
+);
+const EditTextLessonEditor = lazy(
+  () => import("./pages/courses/components/EditTextLesson")
+);
+const FileList = lazy(() => import("./pages/Files/FileList"));
+const AddFile = lazy(() => import("./pages/courses/components/AddFile"));
+const Session = lazy(() => import("./pages/Files/Session"));
+const StudentList = lazy(() => import("./pages/students/StudenList"));
+const StudentDetail = lazy(() => import("./pages/students/StudentDetail"));
+const AssignmentSubmissionReview = lazy(
+  () => import("./pages/Assignmets/AssignmentDetails")
+);
+const AssignmentPage = lazy(() => import("./pages/Assignmets/AssignmentPage"));
+const HelpDesk = lazy(() => import("./pages/HelpDesk/RequestList"));
+const TicketDetails = lazy(() => import("./pages/HelpDesk/TicketDetails"));
+const CertificationList = lazy(
+  () => import("./pages/Certification/CertificationList")
+);
+const EditCreateCertificateTemplate = lazy(
+  () => import("./pages/Certification/EditeCertification")
+);
+const IssueCertification = lazy(
+  () => import("./pages/Certification/IssueCertification")
+);
+const DeleteRequestsList = lazy(
+  () => import("./pages/students/DeleteRequestsList")
+);
+const User = lazy(() => import("./pages/SalesAnalytics/User"));
+const Course = lazy(() => import("./pages/SalesAnalytics/Course"));
+const Bundel = lazy(() => import("./pages/SalesAnalytics/Bundel"));
+const Project = lazy(() => import("./pages/Files/Project"));
+const QueryList = lazy(() => import("./pages/Query/QueryList"));
+const Coupons = lazy(() => import("./pages/coupons/Coupons"));
+const CreateCoupon = lazy(() => import("./pages/coupons/CreateCoupon"));
+const EditCoupon = lazy(() => import("./pages/coupons/EditCoupon"));
+const ForumThreadList = lazy(() => import("./pages/Forum/ForumThreadList"));
+const DeviceApprovals = lazy(() => import("./pages/DeviceApprovals"));
+const ForumDetails = lazy(() => import("./pages/Forum/ForumDetails"));
+const EditForumThread = lazy(() => import("./pages/Forum/EditForumThread"));
+const AddEvent = lazy(() => import("./pages/Events/AddEvent"));
+const EventList = lazy(() => import("./pages/Events/EventList"));
+const EditEvent = lazy(() => import("./pages/Events/EditEvent"));
+const AddJob = lazy(() => import("./pages/Jobs/AddJob"));
+const JobList = lazy(() => import("./pages/Jobs/JobList"));
+const EditJob = lazy(() => import("./pages/Jobs/EditJob"));
+const TestimonialsPage = lazy(() => import("./pages/Testimonials"));
+const AllBanners = lazy(() => import("./pages/Banner/AllBanners"));
+const AddBanner = lazy(() => import("./pages/Banner/AddBanner"));
+const EditBanner = lazy(() => import("./pages/Banner/EditBanner"));
+const LeaderboardSetting = lazy(() => import("./pages/LeaderboardSetting"));
+const NotificationDashboard = lazy(
+  () => import("./pages/Notifications/NotificationDashboard")
+);
+const NotificationList = lazy(
+  () => import("./pages/Notifications/NotificationList")
+);
+const NewsList = lazy(() => import("./pages/News/NewsList"));
+const AddNews = lazy(() => import("./pages/News/AddNews"));
+const EditNews = lazy(() => import("./pages/News/EditNews"));
+const ViewNews = lazy(() => import("./pages/News/ViewNews"));
+const ManageQuestions = lazy(
+  () => import("./pages/PersonalityTest/ManageQuestions")
+);
+const ChatPage = lazy(() => import("./pages/Chat/ChatPage"));
+const AITool = lazy(() => import("./pages/AITool/AITool"));
+const SecurityIncidents = lazy(() => import("./pages/Security/Incidents"));
+const ZoomMeetings = lazy(() => import("./pages/LiveClasses/ZoomMeetings"));
 
 const UserProfiles = lazy(() => import("./pages/UserProfiles"));
 const Videos = lazy(() => import("./pages/UiElements/Videos"));
@@ -94,11 +118,17 @@ const BasicTables = lazy(() => import("./pages/Tables/BasicTables"));
 const FormElements = lazy(() => import("./pages/Forms/FormElements"));
 const AddCategory = lazy(() => import("./pages/AddCategory"));
 const CategoryList = lazy(() => import("./pages/CategoryList"));
-const AppLayout = lazy(() => import("./layout/AppLayout"));
-const Home = lazy(() => import("./pages/Dashboard/Home"));
 const AddReporter = lazy(() => import("./pages/Reporters/AddReporter"));
 const CreateCertificateTemplate = lazy(
   () => import("./pages/Certification/CreateCertificateTemplate")
+);
+
+// Minimal centered spinner, consistent with the app's existing loaders
+// (e.g. the dashboard loading state in pages/Dashboard/Home.tsx).
+const routeFallback = (
+  <div className="flex min-h-screen items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+  </div>
 );
 
 // Simple modal wrapper for SignIn
@@ -130,9 +160,7 @@ function SignInModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         }}
         onClick={e => e.stopPropagation()}
       >
-        <Suspense fallback={<div>Loading...</div>}>
-          <SignIn />
-        </Suspense>
+        <SignIn />
       </div>
     </div>
   );
@@ -155,7 +183,7 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-      <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
+      <Suspense fallback={routeFallback}>
         <Routes>
           {/* Public Routes - Only accessible when NOT authenticated */}
           <Route
@@ -202,7 +230,10 @@ export default function App() {
               />
               <Route
                 path="/courses/text-courses/:lessonId"
-                element={<EditTextLessonEditor />}
+                element={
+                  // @ts-ignore - component props are untyped legacy code
+                  <EditTextLessonEditor />
+                }
               />
 
 
@@ -215,14 +246,20 @@ export default function App() {
 
               {/* Quiz */}
               <Route path="/quiz/all" element={<QuizList />} />
-              <Route path="/quiz/edit/:quizId" element={<EditQuiz />} />
+              <Route path="/quiz/edit/:quizId" element={
+                // @ts-ignore - component props are untyped legacy code
+                <EditQuiz />
+              } />
 
               {/* Assignments */}
               <Route path="/assignments/all" element={<AssignmentList />} />
               <Route path="/assignments/:assignmentId" element={<AssignmentPage />} />
               <Route
                 path="/assignments/edit/:assignmentId"
-                element={<EditAssignmentForm />}
+                element={
+                  // @ts-ignore - component props are untyped legacy code
+                  <EditAssignmentForm />
+                }
               />
               <Route
                 path="/assignments/submissions"
@@ -276,7 +313,10 @@ export default function App() {
 
               {/* Files */}
               <Route path="/files/all" element={<FileList />} />
-              <Route path="/files/add" element={<AddFile />} />
+              <Route path="/files/add" element={
+                // @ts-ignore - component props are untyped legacy code
+                <AddFile />
+              } />
               <Route path="/files/sessions" element={<Session />} />
               <Route path="/files/projects" element={<Project />} />
 

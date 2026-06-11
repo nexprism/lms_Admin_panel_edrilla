@@ -53,7 +53,7 @@ const leaderboardSlice = createSlice({
       })
       .addCase(postLeaderboardSettings.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to update settings";
+        state.error = (action.error as any).message || "Failed to update settings";
       })
       .addCase(getLeaderboardSettings.pending, (state) => {
         state.loading = true;
@@ -65,7 +65,7 @@ const leaderboardSlice = createSlice({
       })
       .addCase(getLeaderboardSettings.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch settings";
+        state.error = (action.error as any).message || "Failed to fetch settings";
       });
   },
 });

@@ -129,11 +129,9 @@ export const fetchNotifications = createAsyncThunk<
                 'Content-Type': 'application/json',
             },
         });
-        console?.log("Full Response:", response?.data);
 
         // The API response structure is: { success: true, data: { notifications: [...], pagination: {...} } }
         const responseData = response?.data?.data || {};
-        console?.log("Response Data:", responseData);
         
         return {
             notifications: responseData?.notifications || [],

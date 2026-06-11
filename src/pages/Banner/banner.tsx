@@ -18,7 +18,6 @@ const Banner: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { banners, loading, error } = useAppSelector((state) => state.banner);
-  console.log("Banners from state:", banners);
   const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -168,7 +167,6 @@ const Banner: React.FC = () => {
                       alt={banner.title}
                       className="w-14 h-10 rounded-sm object-cover"
                       onError={(e) => {
-                        console.log("Image load error for banner:", banner);
                         e.currentTarget.onerror = null;
                         e.currentTarget.src =
                           "https://tse2.mm.bing.net/th/id/OIP.z2HmY-oQPSmmDwR-MYmW6QAAAA?pid=Api&P=0&h=180";

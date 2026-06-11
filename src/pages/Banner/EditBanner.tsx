@@ -33,7 +33,6 @@ const EditBanner: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const { banner, loading } = useAppSelector((state) => state.banner);
-  console.log("Current banner data:", banner);
   const [title, setTitle] = useState("");
   const [image, setImage] = useState<string | File>("");
   const [type, setType] = useState("");
@@ -52,7 +51,7 @@ const EditBanner: React.FC = () => {
   );
   const jobList = useAppSelector((state) => state.job.jobs || []);
   const [loadingRef, setLoadingRef] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [_showSuccess, _setShowSuccess] = useState(false);
   const prevLoading = React.useRef(loading);
 
   const ImageBaseURL = import.meta.env.VITE_IMAGE_URL;
@@ -65,11 +64,11 @@ const EditBanner: React.FC = () => {
     if (banner) {
       setTitle(banner.title);
       setImage(banner.image || "");
-      setMobileImage(banner.mobileImage || null);
+      setMobileImage((banner as any).mobileImage || null);
       setType(banner.type);
       setPriority(banner.priority);
       setIsActive(banner.isActive);
-      setDescription(banner.description || "");
+      setDescription((banner as any).description || "");
       setReferenceId(banner.referenceId || "");
       setStartDate(formatDateForInput(banner.startDate));
       setEndDate(formatDateForInput(banner.endDate));
@@ -147,7 +146,7 @@ const EditBanner: React.FC = () => {
       if (startDate) formData.append("startDate", startDate);
       if (endDate) formData.append("endDate", endDate);
       setUpdateRequested(true);
-      dispatch(updateBanner({ id, bannerData: formData }));
+      dispatch(updateBanner({ id, bannerData: formData as any }));
     }
   };
 

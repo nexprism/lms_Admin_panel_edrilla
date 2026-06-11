@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store';
 import { fetchTestimonials, addTestimonial, resetTestimonialState, deleteTestimonial, updateTestimonial } from '../store/slices/testimonial';
 import { fetchCourses } from '../store/slices/course';
-import { Star, Plus, X, MessageCircle, User, Briefcase, Loader2, AlertCircle, CheckCircle, Search, Trash2, Edit, BookOpen, Image as ImageIcon, Video, Upload, Film } from 'lucide-react';
+import { Star, Plus, X, MessageCircle, User, Briefcase, Loader2, AlertCircle, CheckCircle, Search, Trash2, Edit, BookOpen, Image as ImageIcon, Video, Film } from 'lucide-react';
 
 interface TestimonialData {
     _id?: string;
@@ -128,7 +128,7 @@ const TestimonialsPage: React.FC = () => {
     const [showAddForm, setShowAddForm] = useState<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [showCoursesList, setShowCoursesList] = useState<boolean>(true);
+    const [_showCoursesList, _setShowCoursesList] = useState<boolean>(true);
     const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; id: string | null }>({
         show: false,
         id: null
@@ -255,7 +255,7 @@ const TestimonialsPage: React.FC = () => {
         fetchTestimonialsData(status);
     };
 
-    const handleAddForCourse = (courseId: string) => {
+    const _handleAddForCourse = (courseId: string) => {
         // Reset form data but pre-fill with courseId
         setFormData({
             name: '',

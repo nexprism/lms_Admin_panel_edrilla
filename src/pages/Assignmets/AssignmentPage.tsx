@@ -1,36 +1,18 @@
 import React, { useEffect, useState } from "react";
-import {
-  BookOpen,
-  Calendar,
-  Clock,
-  Award,
-  FileText,
-  User,
-  Users,
-  AlertCircle,
-  CheckCircle,
-  Edit,
-  ArrowLeft,
-  Download,
-  Eye,
-  Loader2,
-  ExternalLink,
-  Target,
-  Timer,
-  RotateCcw,
-  Globe,
-} from "lucide-react";
+import { BookOpen, Calendar, Clock, Award, FileText, Users, AlertCircle, ArrowLeft, Download, Eye, Loader2, ExternalLink, Target, Timer, Globe } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../store";
+import DOMPurify from "dompurify";
 import { fetchAssignmentById } from "../../store/slices/assignment";
 
 const AssignmentPage = () => {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading, data: assignmentData, error } = useSelector((state) => state.assignment);
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, data: assignmentData, error } = useSelector((state: any) => state.assignment);
 
-  const [assignment, setAssignment] = useState(null);
+  const [assignment, setAssignment] = useState<any>(null);
 
   useEffect(() => {
     if (assignmentId) {
@@ -44,7 +26,7 @@ const AssignmentPage = () => {
     }
   }, [assignmentData]);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     if (!dateString) return "No due date";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -61,7 +43,7 @@ const AssignmentPage = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const _getStatusColor = (status: any) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800 border-green-200";
@@ -74,7 +56,7 @@ const AssignmentPage = () => {
     }
   };
 
-  const getDifficultyColor = (level) => {
+  const _getDifficultyColor = (level: any) => {
     switch (level) {
       case "easy":
         return "bg-green-100 text-green-800 border-green-200";
@@ -87,7 +69,7 @@ const AssignmentPage = () => {
     }
   };
 
-  const handleFileDownload = (filePath, fileName = null) => {
+  const handleFileDownload = (filePath: any, fileName = null) => {
     if (!filePath) return;
 
     // Create a proper download link
@@ -353,7 +335,11 @@ const AssignmentPage = () => {
               <div className="bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                 <div
                   className="text-gray-900 dark:text-white/70 prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: assignment.description }}
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(assignment.description, {
+                      USE_PROFILES: { html: true },
+                    }),
+                  }}
                 />
               </div>
             ) : (

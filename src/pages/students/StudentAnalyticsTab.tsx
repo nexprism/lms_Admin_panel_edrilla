@@ -1,25 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { fetchStudentAnalytics } from "../../store/slices/students";
-import {
-  TrendingUp,
-  BookOpen,
-  Award,
-  Clock,
-  ShoppingCart,
-  CheckCircle,
-  XCircle,
-  Activity,
-  Users,
-  MessageCircle,
-  Calendar,
-  BarChart3,
-  Target,
-  ArrowUpRight,
-  PlayCircle,
-  DollarSign,
-  FileText,
-} from "lucide-react";
+import type { AppDispatch } from "../../store";
+import { BookOpen, Award, ShoppingCart, CheckCircle, XCircle, Activity, Calendar, BarChart3, Target, ArrowUpRight, PlayCircle, FileText } from "lucide-react";
 
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString("en-US", {
@@ -30,7 +13,7 @@ const formatDate = (dateString: string) =>
     minute: "2-digit",
   });
 
-const formatCurrency = (amount: number) => {
+const _formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -68,7 +51,7 @@ const ProgressBar = ({ percentage, color = "blue" }: { percentage: number; color
   </div>
 );
 
-const ActivityCard = ({ activity, index }: { activity: any; index: number }) => (
+const ActivityCard = ({ activity, index: _index }: { activity: any; index: number }) => (
   <div className="group relative bg-white rounded-xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
     <div className="absolute top-4 right-4">
       {activity.completed ? (
@@ -109,7 +92,7 @@ const ActivityCard = ({ activity, index }: { activity: any; index: number }) => 
 );
 
 const StudentAnalyticsTab = ({ studentId }: { studentId: string }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

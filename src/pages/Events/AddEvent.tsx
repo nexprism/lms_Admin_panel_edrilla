@@ -44,7 +44,7 @@ interface EventFormData {
 }
 
 // Interface matching the API payload
-interface EventPayload {
+interface _EventPayload {
   title: string;
   description: string;
   type: "online" | "offline" | "hybrid";
@@ -109,7 +109,7 @@ const AddEvent: React.FC = () => {
     if (name.includes(".")) {
       const parts = name.split(".");
       setFormData((prev) => {
-        let newData = { ...prev };
+        const newData = { ...prev };
         let current: any = newData;
 
         for (let i = 0; i < parts.length - 1; i++) {
@@ -286,7 +286,6 @@ const AddEvent: React.FC = () => {
         type: "error",
       });
 
-      console.log("Failed to create event:", err);
     }
   };
 
@@ -295,7 +294,7 @@ const AddEvent: React.FC = () => {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />
       <div className="container mx-auto px-4 py-8">

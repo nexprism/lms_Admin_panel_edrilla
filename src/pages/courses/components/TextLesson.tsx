@@ -1,34 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../store";
 import {
   createTextLesson,
   fetchTextLessonById,
   updateTextLesson,
 } from "../../../store/slices/textLesson";
-import PopupAlert from "../../../components/popUpAlert";
 import QuillEditor from "../../../components/QuillEditor";
-import { 
-  BookOpen, 
-  Type, 
-  FileText, 
-  Upload, 
-  Save, 
-  X, 
-  Globe, 
-  Lock, 
-  Eye, 
-  EyeOff,
-  Paperclip,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  Sparkles,
-  Clock,
-  Menu
-} from "lucide-react";
+import { BookOpen, Type, FileText, Upload, Save, X, Globe, Lock, Paperclip, CheckCircle, AlertCircle, Loader2, Clock } from "lucide-react";
 
 // Enhanced popup component similar to Files component
-const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }) => {
+const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }: any) => {
   useEffect(() => {
     if (isVisible && autoClose && type === "success") {
       const timer = setTimeout(() => {
@@ -104,26 +86,17 @@ const EnhancedPopup = ({ isVisible, message, type, onClose, autoClose = true }) 
 };
 
 const TextLessonEditor = ({
-  section,
-  lesson,
-  onChange,
+  section: _section,
+  lesson: _lesson,
+  onChange: _onChange,
   courseId,
   lessonId,
   textLessonId,
   onClose,
-}) => {
-  console.log("TextLessonEditor props:", {
-    section,
-    lesson,
-    onChange: !!onChange,
-    courseId,
-    lessonId,
-    textLessonId,
-    onClose: !!onClose
-  });
+}: any) => {
 
-  const dispatch = useDispatch();
-  const { loading, error, data } = useSelector((state) => state.textLesson);
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error, data } = useSelector((state) => (state as any).textLesson);
   const [popup, setPopup] = useState({
     isVisible: false,
     message: "",
@@ -135,37 +108,32 @@ const TextLessonEditor = ({
     title: "",
     bookTitle: "",
     accessibility: "free",
-    attachments: [],
+    attachments: [] as any[],
     summary: "",
     content: "",
   });
 
   const [titleCharCount, setTitleCharCount] = useState(0);
-  const [bookTitleCharCount, setBookTitleCharCount] = useState(0);
-  const [archive, setArchive] = useState(true);
-  const [dropContent, setDropContent] = useState(true);
+  const [_bookTitleCharCount, _setBookTitleCharCount] = useState(0);
+  const [archive, _setArchive] = useState(true);
+  const [dropContent, _setDropContent] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [_isMobileMenuOpen, _setIsMobileMenuOpen] = useState(false);
 
-  const quillRef = useRef(null);
-  const [content, setContent] = useState("");
+  const _quillRef = useRef(null);
+  const [_content, _setContent] = useState("");
 
   const getData = useCallback(async () => {
     try {
-      console.log("getData called - textLessonId:", textLessonId);
-      console.log("textLessonId type:", typeof textLessonId);
-      console.log("textLessonId truthy:", !!textLessonId);
       
       if (textLessonId && textLessonId !== 'undefined' && textLessonId !== '') {
         setIsEditMode(true);
-        console.log("Attempting to fetch text lesson data for ID:", textLessonId);
         
         const response = await (dispatch as any)(
           fetchTextLessonById(textLessonId)
         ).unwrap();
         
-        console.log("Fetch response:", response);
         const data = response?.data || response;
         
         if (data) {
@@ -178,12 +146,9 @@ const TextLessonEditor = ({
             summary: data.summary || "",
             content: data.content || "",
           });
-          console.log("Form data updated:", data);
-        } else {
-          console.warn("No data received from API");
+        } else { /* ignore */ 
         }
       } else {
-        console.log("No textLessonId provided or invalid, staying in create mode");
         setIsEditMode(false);
       }
     } catch (error) {
@@ -197,7 +162,6 @@ const TextLessonEditor = ({
   }, [textLessonId, dispatch]);
 
   useEffect(() => {
-    console.log("useEffect triggered - textLessonId:", textLessonId);
     getData();
   }, [getData]);
 
@@ -218,7 +182,7 @@ const TextLessonEditor = ({
     }
   }, [data, loading, error]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: any, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === "title") {
@@ -226,11 +190,11 @@ const TextLessonEditor = ({
     }
   };
 
-  const handleContentChange = (content) => {
+  const _handleContentChange = (content: any) => {
     setFormData((prev) => ({ ...prev, content }));
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = (event: any) => {
     const files = Array.from(event.target.files);
     setFormData((prev) => ({
       ...prev,
@@ -238,7 +202,7 @@ const TextLessonEditor = ({
     }));
   };
 
-  const removeAttachment = (index) => {
+  const removeAttachment = (index: any) => {
     setFormData((prev) => ({
       ...prev,
       attachments: prev.attachments.filter((_, i) => i !== index),
@@ -548,7 +512,7 @@ const TextLessonEditor = ({
               <div className="min-h-[300px] sm:min-h-[400px]">
                 <QuillEditor
                   value={formData.content}
-                  onChange={(content) => handleInputChange("content", content)}
+                  onChange={(content: any) => handleInputChange("content", content)}
                   placeholder="Start writing your lesson content..."
                   height="300px"
                   toolbar="full"

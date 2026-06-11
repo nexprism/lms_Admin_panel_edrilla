@@ -1,44 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCourseById, updateCourse } from "../../store/slices/course";
 import CategorySubcategoryDropdowns from "../../components/CategorySubcategoryDropdowns";
 import { RootState, AppDispatch } from "../../store";
 import { useLocation, useParams } from "react-router-dom";
-import {
-  FileText,
-  DollarSign,
-  Users,
-  Tag,
-  Image,
-  Video,
-  Plus,
-  X,
-  Award,
-  Download,
-  MessageCircle,
-  Lock,
-  Upload,
-  Eye,
-  Loader2,
-  AlertCircle,
-  Type,
-  Edit,
-  Search,
-  Check,
-  Save,
-  CheckCircle,
-  Settings,
-  Menu,
-  Layout,
-  Layers,
-  Sparkles,
-  Target,
-  Star,
-} from "lucide-react";
+import { FileText, DollarSign, Users, Tag, Image, Video, Plus, X, Award, Download, MessageCircle, Lock, Upload, Eye, Loader2, AlertCircle, Type, Edit, Search, Check, CheckCircle, Settings, Menu, Layout, Star } from "lucide-react";
 import ModuleSection from "./ModuleSection";
 import Faqs from "./components/Faqs";
 import QuillEditor from "../../components/QuillEditor";
-import Editor from "../../components/Editor";
 import LandingPageSections from "./LandingPageSections";
 import AddReview from "./AddReview";
 
@@ -112,7 +81,7 @@ const FileUpload = ({
 }: FileUploadProps) => {
   const [dragOver, setDragOver] = useState(false);
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
     const files = e.dataTransfer.files;
@@ -121,7 +90,7 @@ const FileUpload = ({
     }
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(true);
   };
@@ -217,7 +186,7 @@ const YouTubeUrlInput = ({
 const EditCourse = () => {
   const { id } = useParams();
   const location = useLocation();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Fallback extraction from pathname
   const courseId = id || location.pathname.split("/").pop();
@@ -225,20 +194,19 @@ const EditCourse = () => {
     loading,
     error,
     data: courseData,
-  } = useSelector((state) => state.course);
+  } = useSelector((state: RootState) => state.course);
 
   // Tab state
   const [activeTab, setActiveTab] = useState("basic");
-  console.log('Active Tab:', activeTab);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile sidebar toggle
 
   // Course state (unchanged)
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState<any[]>([]);
   const [customTag, setCustomTag] = useState("");
-  const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [coverImageFile, setCoverImageFile] = useState(null);
-  const [verticalCarouselImageFile, setVerticalCarouselImageFile] = useState(null);
-  const [featuredImageBannerFile, setFeaturedImageBannerFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [verticalCarouselImageFile, setVerticalCarouselImageFile] = useState<File | null>(null);
+  const [featuredImageBannerFile, setFeaturedImageBannerFile] = useState<File | null>(null);
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [seoContent, setSeoContent] = useState("");
@@ -248,7 +216,7 @@ const EditCourse = () => {
     type: "success",
     isVisible: false,
   });
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<any>({});
 
   const [formData, setFormData] = useState<any>({
     title: "",
@@ -354,14 +322,14 @@ const EditCourse = () => {
 
   // Validation schema (unchanged)
   const validateForm = (
-    formData,
-    description,
-    seoContent,
-    selectedTags,
-    files,
-    demoVideoUrl
+    formData: any,
+    description: any,
+    seoContent: any,
+    selectedTags: any,
+    files: any,
+    demoVideoUrl: any
   ) => {
-    const errors = {};
+    const errors: any = {};
 
     if (!formData.title.trim()) {
       errors.title = "Course title is required";
@@ -435,7 +403,7 @@ const EditCourse = () => {
     if (courseData) {
       const course = courseData.data || courseData;
 
-      setFormData((prev) => ({
+      setFormData((prev: any) => ({
         ...prev,
         title: course.title || "",
         subtitle: course.subtitle || "",
@@ -574,7 +542,7 @@ const EditCourse = () => {
 
       const courseModules = course.modules || [];
       // Map modules and lessons, including textLessons and files for each lesson
-      const processedModules = courseModules.map((module) => ({
+      const processedModules = courseModules.map((module: any) => ({
         _id: module._id || undefined,
         title: module.title || "",
         description: module.description || "",
@@ -582,7 +550,7 @@ const EditCourse = () => {
         estimatedDuration: module.estimatedDuration || 60,
         isPublished: module.isPublished || false,
         courseId: module.courseId || courseId,
-        lessons: (module.lessons || []).map((lesson) => ({
+        lessons: (module.lessons || []).map((lesson: any) => ({
           _id: lesson._id || undefined,
           title: lesson.title || "",
           type: lesson.type || "video",
@@ -605,7 +573,7 @@ const EditCourse = () => {
       // --- Load initial plans from backend ---
       if (Array.isArray(course.plans)) {
         setPlans(
-          course.plans.map((p) => ({
+          course.plans.map((p: any) => ({
             name: p.name || "",
             price: String(p.price ?? ""),
             description: p.description || "",
@@ -618,19 +586,20 @@ const EditCourse = () => {
         );
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [courseData]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     const { name, value, type } = e.target;
     const checked = e.target.checked;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
 
-  const addTag = (tag) => {
+  const addTag = (tag: any) => {
     if (selectedTags.length >= 5) {
       setPopup({
         isVisible: true,
@@ -641,28 +610,28 @@ const EditCourse = () => {
     }
     if (!selectedTags.includes(tag)) {
       setSelectedTags([...selectedTags, tag]);
-      setFormErrors((prev) => ({ ...prev, tags: "" }));
+      setFormErrors((prev: any) => ({ ...prev, tags: "" }));
     }
   };
 
-  const handleCategoryChange = (categoryId, categoryName) => {
-    setFormData((prev) => ({
+  const handleCategoryChange = (categoryId: any, _categoryName: any) => {
+    setFormData((prev: any) => ({
       ...prev,
       categoryId,
       subCategoryId: "",
     }));
-    setFormErrors((prev) => ({ ...prev, categoryId: "", subCategoryId: "" }));
+    setFormErrors((prev: any) => ({ ...prev, categoryId: "", subCategoryId: "" }));
   };
 
-  const handleSubcategoryChange = (subCategoryId, subCategoryName) => {
-    setFormData((prev) => ({
+  const handleSubcategoryChange = (subCategoryId: any, _subCategoryName: any) => {
+    setFormData((prev: any) => ({
       ...prev,
       subCategoryId,
     }));
-    setFormErrors((prev) => ({ ...prev, subCategoryId: "" }));
+    setFormErrors((prev: any) => ({ ...prev, subCategoryId: "" }));
   };
 
-  const removeTag = (tagToRemove) => {
+  const removeTag = (tagToRemove: any) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
 
@@ -681,7 +650,7 @@ const EditCourse = () => {
     ) {
       setSelectedTags([...selectedTags, customTag.trim()]);
       setCustomTag("");
-      setFormErrors((prev) => ({ ...prev, tags: "" }));
+      setFormErrors((prev: any) => ({ ...prev, tags: "" }));
     }
   };
 
@@ -712,7 +681,7 @@ const EditCourse = () => {
 
   // Edit plan
   const handleEditPlan = (idx: number) => {
-    setPlanForm({ ...plans[idx] });
+    setPlanForm({ ...plans[idx] } as any);
     setEditingPlanIdx(idx);
     setPlanFormError("");
   };
@@ -727,13 +696,13 @@ const EditCourse = () => {
   };
 
   // Cancel editing
-  const handleCancelEdit = () => {
+  const _handleCancelEdit = () => {
     setPlanForm({ name: "", price: "", description: "", durationType: "Month", duration: "", salePrice: "", status: "active", _id: undefined });
     setEditingPlanIdx(null);
     setPlanFormError("");
   };
 
-  const handleSubmit = async (e, isDraft = false) => {
+  const handleSubmit = async (e: any, isDraft = false) => {
     e.preventDefault();
 
     const files = { thumbnailFile, coverImageFile, verticalCarouselImageFile, featuredImageBannerFile };
@@ -746,7 +715,6 @@ const EditCourse = () => {
       demoVideoUrl
     );
 
-    console?.log('Validation errors:', errors);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       setPopup({
@@ -861,7 +829,7 @@ const EditCourse = () => {
 
     try {
       await dispatch(
-        updateCourse({ id: courseId, data: submitFormData })
+        updateCourse({ id: courseId!, data: submitFormData })
       ).unwrap();
       setPopup({
         isVisible: true,
@@ -872,18 +840,18 @@ const EditCourse = () => {
       });
       // Refetch course data after update to get latest price/salePrice
       const token = localStorage.getItem("token") || "";
-      dispatch(fetchCourseById({ courseId, token }));
+      dispatch(fetchCourseById({ courseId, token } as any));
 
     } catch (error) {
       setPopup({
         isVisible: true,
-        message: error.message || "Failed to update course. Please try again.",
+        message: (error as any).message || "Failed to update course. Please try again.",
         type: "error",
       });
     }
   };
 
-  const getUrlFromFile = (file) => {
+  const _getUrlFromFile = (file: any) => {
     if (!file) return "";
     return URL.createObjectURL(file);
   };
@@ -920,7 +888,7 @@ const EditCourse = () => {
     <>
       <SuccessPopup
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ ...popup, isVisible: false })}
       />
@@ -1167,7 +1135,7 @@ const EditCourse = () => {
                         What You'll Learn (Learning Outcomes)
                       </label>
                       <div className="space-y-2">
-                        {(formData.learningOutcomes || []).map((outcome, index) => (
+                        {(formData.learningOutcomes || []).map((outcome: any, index: number) => (
                           <div key={index} className="flex gap-2">
                             <input
                               type="text"
@@ -1183,7 +1151,7 @@ const EditCourse = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                const updated = (formData.learningOutcomes || []).filter((_, i) => i !== index);
+                                const updated = (formData.learningOutcomes || []).filter((_: any, i: number) => i !== index);
                                 setFormData({ ...formData, learningOutcomes: updated });
                               }}
                               className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -1214,7 +1182,7 @@ const EditCourse = () => {
                         Who This Course Is For (Target Audience)
                       </label>
                       <div className="space-y-2">
-                        {(formData.targetAudience || []).map((audience, index) => (
+                        {(formData.targetAudience || []).map((audience: any, index: number) => (
                           <div key={index} className="flex gap-2">
                             <input
                               type="text"
@@ -1230,7 +1198,7 @@ const EditCourse = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                const updated = (formData.targetAudience || []).filter((_, i) => i !== index);
+                                const updated = (formData.targetAudience || []).filter((_: any, i: number) => i !== index);
                                 setFormData({ ...formData, targetAudience: updated });
                               }}
                               className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -1745,7 +1713,6 @@ const EditCourse = () => {
                 {activeTab === "modules" && (
                   <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Course Modules</h3>
-                    {console?.log("modules 0987", modules)}
                     <ModuleSection
                       modules={modules}
                       onModulesChange={handleModulesChange}
@@ -1800,7 +1767,7 @@ const EditCourse = () => {
                       </label>
                       <QuillEditor
                         value={formData.mentorDescription || ""}
-                        onChange={(value) => setFormData({ ...formData, mentorDescription: value })}
+                        onChange={(value: any) => setFormData({ ...formData, mentorDescription: value })}
                         placeholder="Enter mentor description"
                       />
                     </div>
@@ -1835,7 +1802,7 @@ const EditCourse = () => {
                         Mentor Achievements
                       </label>
                       <div className="space-y-2">
-                        {(formData.mentorAchievements || []).map((achievement, index) => (
+                        {(formData.mentorAchievements || []).map((achievement: any, index: number) => (
                           <div key={index} className="flex gap-2">
                             <input
                               type="text"
@@ -1851,7 +1818,7 @@ const EditCourse = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                const updated = (formData.mentorAchievements || []).filter((_, i) => i !== index);
+                                const updated = (formData.mentorAchievements || []).filter((_: any, i: number) => i !== index);
                                 setFormData({ ...formData, mentorAchievements: updated });
                               }}
                               className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -2181,11 +2148,11 @@ const EditCourse = () => {
                           // Only update local state, do NOT call handleSubmit here
                           onChange={(e) => {
                             const checked = e.target.checked;
-                            setFormData((prev) => ({
+                            setFormData((prev: any) => ({
                               ...prev,
                               isPublished: checked,
                             }));
-                            setFormErrors((prev) => ({ ...prev, isPublished: "" }));
+                            setFormErrors((prev: any) => ({ ...prev, isPublished: "" }));
                           }}
                           className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                         />

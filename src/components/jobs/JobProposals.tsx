@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../store';
-import { updateJobStatus } from '../../store/slices/job';
-import axiosInstance from '../../services/axiosConfig';
 
 interface ProposalUser {
   _id: string;
@@ -30,9 +26,9 @@ interface JobProposalsProps {
 }
 
 const JobProposals: React.FC<JobProposalsProps> = ({ proposals, isOpen, onClose, jobTitle, jobId }) => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'rejected'>('pending');
+  const [activeTab, _setActiveTab] = useState<'pending' | 'accepted' | 'rejected'>('pending');
   const [localProposals, setLocalProposals] = useState<Proposal[]>(proposals);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [_loadingId, setLoadingId] = useState<string | null>(null);
   
   // Update local proposals when props change
   React.useEffect(() => {
@@ -44,14 +40,13 @@ const JobProposals: React.FC<JobProposalsProps> = ({ proposals, isOpen, onClose,
   const filteredProposals = localProposals.filter(proposal => proposal.status === activeTab);
   
   // Function to update proposal status
-  const handleStatusChange = async (proposalId: string, newStatus: 'accepted' | 'rejected') => {
+  const _handleStatusChange = async (proposalId: string, newStatus: 'accepted' | 'rejected') => {
     try {
       setLoadingId(proposalId);
       
       // In a real app, you would call your API here
       // For example:
       if (jobId) {
-        console.log(`Updating proposal ${proposalId} for job ${jobId} to status: ${newStatus}`);
         // Uncomment below when API is ready
         // await axiosInstance.patch(`/jobs/${jobId}/proposals/${proposalId}`, { status: newStatus });
       }
@@ -167,7 +162,6 @@ const JobProposals: React.FC<JobProposalsProps> = ({ proposals, isOpen, onClose,
                               const baseUrlWithSlash = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
                               const cvPath = proposal.cv.startsWith('/') ? proposal.cv.substring(1) : proposal.cv;
                               const url = proposal.cv.startsWith('http') ? proposal.cv : `${baseUrlWithSlash}${cvPath}`;
-                              console.log('Opening CV URL:', url);
                               window.open(url, '_blank', 'noopener,noreferrer');
                             }}
                             className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"

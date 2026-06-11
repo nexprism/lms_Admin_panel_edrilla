@@ -1,24 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  BookOpen,
-  FileText,
-  Upload,
-  X,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  Save,
-  Clock,
-  Target,
-  Trophy,
-  Globe,
-  Paperclip,
-  GraduationCap,
-  Timer,
-  RotateCcw,
-  Sparkles
-} from "lucide-react";
+import { BookOpen, FileText, Upload, X, Loader2, CheckCircle, AlertCircle, Save, Clock, Target, Trophy, Globe, Paperclip, GraduationCap, Timer, RotateCcw } from "lucide-react";
 import {
   createAssignment,
   updateAssignment,
@@ -131,7 +113,6 @@ export default function AddAssignmentForm({
   const { loading, error, data } = useSelector(
     (state: any) => state.assignment
   );
-  console.log("assignmentId", assignmentId);
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
@@ -156,8 +137,7 @@ export default function AddAssignmentForm({
 
   // Fetch assignment if editing
   const getData = async () => {
-    const response = await dispatch(fetchAssignmentById(assignmentId) as any);
-    console.log("Fetched assignment data: -------------", response);
+    const response = await dispatch(fetchAssignmentById(assignmentId!) as any);
 
     const data = response.payload.data;
     setFormData({
@@ -178,18 +158,17 @@ export default function AddAssignmentForm({
   useEffect(() => {
     if (assignmentId) {
       setIsEditMode(true);
-      console.log(`Fetching assignment with ID: ${assignmentId}`);
       getData();
     } else {
       setIsEditMode(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [assignmentId, dispatch]);
 
   // Prefill form in edit mode
   useEffect(() => {
     if (isEditMode && data && Array.isArray(data)) {
       const assignment = data.find((a: any) => a._id === assignmentId);
-      console.log("Fetched assignment data:", assignment);
       if (assignment) {
         setFormData({
           title: assignment.title || "",
@@ -691,7 +670,7 @@ export default function AddAssignmentForm({
       {/* Enhanced Popup - Responsive */}
       <EnhancedPopup
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />

@@ -1,25 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchCourseBundles } from "../../store/slices/courseBundle";
-import {
-  CheckCircle,
-  XCircle,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Eye,
-  Users,
-  BookOpen,
-  DollarSign,
-  Pencil,
-  Trash,
-  Trash2,
-} from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, RotateCcw, BookOpen, Pencil, Trash2 } from "lucide-react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 interface Bundle {
@@ -69,7 +53,6 @@ const BundleList: React.FC = () => {
 
   // Extract bundles from the correct data structure
   const bundles: Bundle[] = Array.isArray(data?.bundles) ? data.bundles : [];
-  console.log("Fetched bundles:", bundles);
 
   const pagination = {
     total: data?.total || 0,
@@ -125,7 +108,7 @@ const BundleList: React.FC = () => {
     }).format(price);
   };
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case "active":
         return "text-green-500";

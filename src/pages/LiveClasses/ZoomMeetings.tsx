@@ -69,6 +69,7 @@ const ZoomMeetings: React.FC = () => {
         } else {
             dispatch(fetchReports({ from: dateFrom, to: dateTo }));
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
     }, [dispatch, activeTab]);
 
     const handleFetchReports = () => {

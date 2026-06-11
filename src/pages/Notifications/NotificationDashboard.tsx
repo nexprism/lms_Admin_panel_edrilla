@@ -100,15 +100,15 @@ const NotificationDashboard: React.FC = () => {
     
     try {
       if (notificationType === 'global') {
-        await dispatch(sendNotification({ 
-          ...form, 
-          token 
-        }) as any).unwrap();
+        await dispatch(sendNotification({
+          ...form,
+          token
+        } as any) as any).unwrap();
       } else {
-        await dispatch(sendCourseNotification({ 
-          ...form, 
-          token 
-        }) as any).unwrap();
+        await dispatch(sendCourseNotification({
+          ...form,
+          token
+        } as any) as any).unwrap();
       }
     } catch (err) {
       console.error('Failed to send notification:', err);

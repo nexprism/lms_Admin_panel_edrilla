@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import axiosInstance from '../../services/axiosConfig';
 
@@ -104,7 +104,6 @@ export const fetchEvents = createAsyncThunk(
             if (!response.data) {
                 throw new Error('No data received from server');
             }
-            console.log('Fetched events:', response.data);
             return response.data;
         } catch (error) {
             if (error instanceof Error) {
@@ -160,7 +159,6 @@ export const deleteEvent = createAsyncThunk(
     async (eventId: string, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.delete(`/events/${eventId}`);
-            console.log('Delete response:', response.data);
            if (response.data.success) {
                setTimeout(() => {
                     window.location.href = "/banner";

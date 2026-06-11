@@ -15,6 +15,7 @@ type SidebarContextType = {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentional: hook/constant exported alongside provider in this context file
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {

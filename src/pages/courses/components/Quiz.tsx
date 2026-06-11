@@ -218,7 +218,7 @@ const Quiz = ({
   const [hasSaveAttempted, setHasSaveAttempted] = useState(false); // NEW: Track if save was attempted
 
   const getData = async () => {
-    const response = await dispatch(fetchQuizById(quizId) as any);
+    const response = await dispatch(fetchQuizById(quizId!) as any);
     const data = response?.payload?.data || response?.payload;
     setQuizData({
       quizTitle: data.quizTitle || "",
@@ -243,12 +243,12 @@ const Quiz = ({
     } else {
       setQuizData({
         quizTitle: lesson?.quizTitle || "",
-        quizDuration: lesson?.quizDuration || "",
+        quizDuration: (lesson?.quizDuration || "") as any,
         quizDifficulty: lesson?.quizDifficulty || "",
         passMark: lesson?.passMark || 70,
         quizDescription: lesson?.quizDescription || "",
         courseId: sectionId,
-        totalMarks: lesson?.totalMarks || 100,
+        totalMarks: (lesson as any)?.totalMarks || 100,
         courseTitle: "",
         lessonTitle: "",
         isTestSeries: lesson?.isTestSeries || false,
@@ -256,6 +256,7 @@ const Quiz = ({
       setSections(lesson?.sections || []);
       setIsEditMode(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [quizId, lesson, sectionId, dispatch]);
 
   // Handle quiz data from Redux when fetching for edit mode
@@ -405,7 +406,7 @@ const Quiz = ({
     setHasSaveAttempted(true);
 
     // Prepare payload based on mode
-    let payload;
+    let payload: any;
     if (isEditMode && quizId) {
       // Update existing quiz
       payload = {

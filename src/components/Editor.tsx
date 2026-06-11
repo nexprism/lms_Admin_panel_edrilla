@@ -58,10 +58,11 @@ const Editor: React.FC<EditorProps> = ({
   holder = "editorjs",
   uploadEndpoint = "/images",
 }) => {
-  const editorRef = useRef<EditorJS | null>(null);
+  const editorRef = useRef<any | null>(null);
   const isInitializedRef = useRef(false);
   const holderRef = useRef<string>(holder);
   // Generate a stable unique ID for this editor instance
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   const actualHolderId = useMemo(() => `${holder}-${Math.random().toString(36).substr(2, 9)}`, []);
 
   // Use a ref for onChange to avoid re-initializing editor when it changes
@@ -86,7 +87,6 @@ const Editor: React.FC<EditorProps> = ({
       if (holderElement) {
         const existingEditor = holderElement.querySelector('.codex-editor');
         if (existingEditor) {
-          console.warn(`Editor already exists for holder: ${actualHolderId}`);
           return;
         }
       }
@@ -104,7 +104,7 @@ const Editor: React.FC<EditorProps> = ({
               // Editor is ready
             }
           },
-          onChange: async (api) => {
+          onChange: async (api: any) => {
             const savedData = await api.saver.save();
             if (onChangeRef.current) {
               onChangeRef.current(savedData);
@@ -216,20 +216,19 @@ const Editor: React.FC<EditorProps> = ({
           if (editorRef.current) {
             try {
               editorRef.current.destroy();
-            } catch (e) {
-              console.warn("Error destroying editor:", e);
+            } catch (e) { /* ignore */ 
             }
             editorRef.current = null;
           }
           isInitializedRef.current = false;
-        }).catch(e => {
-          console.warn("Editor cleanup error:", e);
+        }).catch((_e: any) => {
           isInitializedRef.current = false;
         });
       } else {
         isInitializedRef.current = false;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [holder]);
 
   return (

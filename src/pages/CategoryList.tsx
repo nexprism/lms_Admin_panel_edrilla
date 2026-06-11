@@ -24,7 +24,6 @@ import {
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
 import EditCategoryModal from "../components/modals/EditCategoryModal";
-import toast from "react-hot-toast";
 import PopupAlert from "../components/popUpAlert";
 import { useNavigate } from "react-router-dom";
 
@@ -137,7 +136,7 @@ const DeleteModal: React.FC<{
 
 const CategoryList: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { categories, loading, error, pagination, searchQuery, filters } =
+  const { categories, loading, error, pagination, searchQuery, filters: _filters } =
     useAppSelector((state) => state.courseCategory);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -312,7 +311,6 @@ const CategoryList: React.FC = () => {
         );
 
         // Optional: Show success message
-        console.log(`Category "${categoryToDelete.name}" deleted successfully`);
       } catch (error) {
         console.error("Failed to delete category:", error);
         setPopup({
@@ -504,13 +502,13 @@ const CategoryList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button
-                      onClick={() => openEditModal(cat)}
+                      onClick={() => openEditModal(cat as any)}
                       className="text-blue-500 hover:text-blue-700 transition-colors"
                     >
                       <Pencil className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => openDeleteModal(cat)}
+                      onClick={() => openDeleteModal(cat as any)}
                       className="text-red-500 hover:text-red-700 transition-colors"
                     >
                       <Trash2 className="h-5 w-5" />

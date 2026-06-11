@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createCourseBundle } from "../../store/slices/courseBundle";
 import { fetchCourses } from "../../store/slices/course";
 import { RootState } from "../../hooks/redux";
+import type { AppDispatch } from "../../store";
 import QuillEditor from "../../components/QuillEditor";
 
 import { ChevronDown, X, Check, CheckCircle, XCircle } from "lucide-react";
@@ -241,7 +242,7 @@ const CustomPopup = ({
 };
 
 const AddBundleForm = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Redux state
   const { loading: bundleLoading, error: bundleError } = useSelector(
@@ -250,7 +251,6 @@ const AddBundleForm = () => {
   const { data: courses, loading: coursesLoading } = useSelector(
     (state: RootState) => state.course
   );
-  console.log("Courses:", courses);
 
   // Popup state
   const [popup, setPopup] = useState<{

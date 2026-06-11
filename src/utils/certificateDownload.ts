@@ -19,7 +19,6 @@ export const downloadCertificateById = async (
       return;
     }
 
-    console.log("Downloading certificate with ID:", certificateId);
 
     // First, try the PDF download endpoint
     try {
@@ -27,11 +26,9 @@ export const downloadCertificateById = async (
         fetchCertificatePdf({ certificateId })
       );
 
-      console.log("Download result action:", resultAction);
 
       if (fetchCertificatePdf.fulfilled.match(resultAction)) {
         const blob = resultAction.payload;
-        console.log("Received blob:", blob, "Type:", blob?.type, "Size:", blob?.size);
         
         if (blob && blob instanceof Blob) {
           // Check if blob is empty
@@ -47,21 +44,17 @@ export const downloadCertificateById = async (
           a.click();
           a.remove();
           window.URL.revokeObjectURL(url);
-          console.log("Certificate downloaded successfully");
           return;
         }
       } else if (fetchCertificatePdf.rejected.match(resultAction)) {
-        const error = resultAction.payload as string;
-        console.warn("PDF download endpoint failed, trying view endpoint:", error);
+        const _error = resultAction.payload as string;
         // Fall through to use view endpoint
       }
     } catch (pdfError: any) {
-      console.warn("PDF download endpoint error, trying view endpoint:", pdfError);
       // Fall through to use view endpoint
     }
 
     // Fallback: Use the view endpoint which generates PDF dynamically
-    console.log("Using view endpoint to generate PDF dynamically");
     try {
       const response = await axiosInstance.get(
         `/certificates/${certificateId}/view`,
@@ -83,7 +76,6 @@ export const downloadCertificateById = async (
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
-        console.log("Certificate downloaded successfully via view endpoint");
       } else {
         throw new Error("Invalid or empty certificate file received");
       }
@@ -120,14 +112,12 @@ export const downloadCertificateByUserAndCourse = async (
   fileName: string = "certificate.pdf"
 ): Promise<void> => {
   try {
-    console.log("Fetching certificate for userId:", userId, "courseId:", courseId);
     
     // First, find the certificate by user_id (backend doesn't filter by course_id in query)
     const response = await axiosInstance.get(
       `/certificates?user_id=${userId}`
     );
 
-    console.log("Certificate API response:", response.data);
 
     // Handle different response structures
     let certificates = null;
@@ -143,7 +133,6 @@ export const downloadCertificateByUserAndCourse = async (
       certificates = [];
     }
     
-    console.log("Extracted certificates:", certificates);
     
     if (!certificates || certificates.length === 0) {
       alert("No certificate found for this user.");
@@ -161,7 +150,6 @@ export const downloadCertificateByUserAndCourse = async (
 
     // If no match found, use the first certificate (fallback)
     if (!matchingCertificate && certificates.length > 0) {
-      console.warn("No certificate found for specific course, using first available certificate");
       matchingCertificate = certificates[0];
     }
 
@@ -173,7 +161,6 @@ export const downloadCertificateByUserAndCourse = async (
     // Get the certificate ID
     const certificateId = matchingCertificate._id || matchingCertificate.id;
     
-    console.log("Certificate ID to download:", certificateId);
     
     if (!certificateId) {
       console.error("Certificate object:", matchingCertificate);

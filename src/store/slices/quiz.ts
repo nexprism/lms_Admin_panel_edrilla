@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 interface Question {
@@ -9,6 +8,7 @@ interface Question {
 }
 
 interface QuizPayload {
+  id?: string;
   course: string;
   lesson: string;
   questions: Question[];

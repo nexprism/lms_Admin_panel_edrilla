@@ -28,7 +28,7 @@ interface Message {
   createdAt: string;
 }
 
-interface SupportTicket {
+interface _SupportTicket {
   _id: string;
   userId: { _id: string; fullName: string; email: string };
   subject: string;
@@ -195,7 +195,7 @@ const TicketDetails: React.FC<{ isEditMode: boolean }> = ({ isEditMode }) => {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => {
           setPopup({ isVisible: false, message: "", type: "" });
           if (popup.type === "success") {
@@ -372,7 +372,7 @@ const TicketDetails: React.FC<{ isEditMode: boolean }> = ({ isEditMode }) => {
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white">
                             {typeof msg.userId === "object"
-                              ? msg.userId.fullName
+                              ? (msg.userId as any).fullName
                               : "User"}
                           </h3>
                           {/* <p className="text-sm text-gray-500 dark:text-gray-400">

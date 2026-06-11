@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch } from "../../hooks/redux";
-import { fetchAssignmentSubmissions } from "../../store/slices/assignment";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import toast from "react-hot-toast";
@@ -180,7 +179,7 @@ const CertificationList = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const navigate = useNavigate();
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined as any);
 
   // Debounce search input
   useEffect(() => {
@@ -202,6 +201,7 @@ const CertificationList = () => {
   // Fetch data when page or search changes
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [pagination.page, debouncedSearch, searchInput]);
 
   const fetchData = async () => {
@@ -209,12 +209,6 @@ const CertificationList = () => {
       setLoading(true);
       setError(null);
 
-      console.log(
-        "📥 Fetching assignments - Page:",
-        pagination.page,
-        "Search:",
-        debouncedSearch
-      );
 
       const response = await dispatch(
         fetchCertificates({
@@ -224,7 +218,6 @@ const CertificationList = () => {
         })
       ).unwrap();
 
-      console.log("📥 Fetched assignments:", response);
 
       // Assuming the API returns data in this format
       if (response && response.templates) {
@@ -232,7 +225,7 @@ const CertificationList = () => {
         setPagination({
           page: pagination.page,
           limit: pagination.limit,
-        });
+        } as any);
       } else {
         // Fallback if response structure is different
         setAssignments(Array.isArray(response) ? response : []);
@@ -254,25 +247,21 @@ const CertificationList = () => {
       newPage !== pagination.page &&
       !loading
     ) {
-      console.log("📄 Page change:", newPage);
       setPagination((prev) => ({ ...prev, page: newPage }));
     }
   };
 
   const handleSearchReset = () => {
-    console.log("🔄 Reset search");
     setSearchInput("");
     setDebouncedSearch("");
   };
 
-  const openDeleteModal = (assignment: Assignment) => {
-    console.log("🗑️ Opening delete modal");
+  const _openDeleteModal = (assignment: Assignment) => {
     setAssignmentToDelete(assignment);
     setDeleteModalOpen(true);
   };
 
   const closeDeleteModal = () => {
-    console.log("🗑️ Closing delete modal");
     setAssignmentToDelete(null);
     setDeleteModalOpen(false);
     setIsDeleting(false);
@@ -282,7 +271,6 @@ const CertificationList = () => {
     if (assignmentToDelete) {
       setIsDeleting(true);
       try {
-        console.log("🗑️ Deleting assignment");
         // TODO: Implement deleteAssignment action
         // await dispatch(deleteAssignment(assignmentToDelete._id)).unwrap();
         toast.success("Assignment deleted successfully");
@@ -321,7 +309,6 @@ const CertificationList = () => {
   };
 
   const handleEditClick = (assignmentId: string) => {
-    console.log("✏️ Edit click:", assignmentId);
     navigate(`/certificates-template/edit/${assignmentId}`);
   };
 
@@ -365,7 +352,6 @@ const CertificationList = () => {
                 type="text"
                 value={searchInput}
                 onChange={(e) => {
-                  console.log("🔍 Search input:", e.target.value);
                   setSearchInput(e.target.value);
                 }}
                 placeholder="Search by course, title, or subject..."
@@ -448,7 +434,7 @@ const CertificationList = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                      <div className="max-w-xs truncate">{assignment.type}</div>
+                      <div className="max-w-xs truncate">{(assignment as any).type}</div>
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span

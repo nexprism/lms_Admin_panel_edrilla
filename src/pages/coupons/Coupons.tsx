@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../hooks/redux";
 import { 
   fetchCoupons, 
@@ -28,7 +28,7 @@ import {
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PopupAlert from "../../components/popUpAlert";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 interface Coupon {
   _id: string;
@@ -390,9 +390,7 @@ const Coupons: React.FC = () => {
       const couponCode = couponToDelete.code;
       
       try {
-        console.log("Deleting coupon:", couponId, couponCode);
-        const result = await dispatch(deleteCoupon(couponId)).unwrap();
-        console.log("Delete result:", result);
+        const _result = await dispatch(deleteCoupon(couponId)).unwrap();
         
         setPopup({
           message: `Coupon "${couponCode}" deleted successfully`,
@@ -464,8 +462,6 @@ const Coupons: React.FC = () => {
   
   // Debug: Log when coupons array changes
   useEffect(() => {
-    console.log("Coupons list updated. Count:", coupons.length);
-    console.log("Coupon IDs:", coupons.map(c => c._id));
   }, [coupons]);
 
   return (
@@ -477,7 +473,7 @@ const Coupons: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white/90">Coupons</h1>
           <div className="flex items-center gap-4">
             <span className="text-gray-500 text-sm dark:text-gray-400">
-               Total: {data?.data?.total ?? 0}
+               Total: {(data?.data as any)?.total ?? 0}
             </span>
             <button
              onClick={() => navigate("/coupons/add")}
@@ -506,7 +502,7 @@ const Coupons: React.FC = () => {
               <select
                 value={localFilters.isActive === undefined ? "" : localFilters.isActive.toString()}
                 onChange={(e) =>
-                  handleFilterChange("isActive", e.target.value === "" ? undefined : e.target.value === "true")
+                  handleFilterChange("isActive", (e.target.value === "" ? undefined : e.target.value === "true") as any)
                 }
                 className="border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
@@ -603,9 +599,9 @@ const Coupons: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                coupons.map((coupon: Coupon, idx: number) => {
-                  const validUsages = coupon.usedBy.filter(usage => usage.userId !== null);
-                  const totalUsages = validUsages.reduce((sum, usage) => sum + (usage.usageCount || 0), 0);
+                coupons.map((coupon: any, idx: number) => {
+                  const validUsages = coupon.usedBy.filter((usage: any) => usage.userId !== null);
+                  const totalUsages = validUsages.reduce((sum: number, usage: any) => sum + (usage.usageCount || 0), 0);
                   
                   return (
                     <tr

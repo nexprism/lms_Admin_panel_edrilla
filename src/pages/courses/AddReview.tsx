@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { 
-  Star, 
-  Upload, 
-  Loader2, 
-  Check, 
-  Plus, 
-  Save, 
-  X, 
-  Trash2,
-  Trash
-} from "lucide-react";
+import { Star, Upload, Loader2, Check, Plus, Save, Trash2, Trash } from "lucide-react";
 import axiosInstance from "../../services/axiosConfig";
 
 const AddReview = () => {
@@ -32,7 +22,7 @@ const AddReview = () => {
     }
   ]);
 
-  const [existingReviews, setExistingReviews] = useState([]);
+  const [existingReviews, setExistingReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -66,16 +56,16 @@ const AddReview = () => {
     ]);
   };
 
-  const removeReviewDraft = (id) => {
+  const removeReviewDraft = (id: string) => {
     if (reviews.length === 1) return;
     setReviews(reviews.filter(r => r.id !== id));
   };
 
-  const updateDraft = (id, field, value) => {
+  const updateDraft = (id: string, field: string, value: any) => {
     setReviews(current => current.map(r => (r.id === id ? { ...r, [field]: value } : r)));
   };
 
-  const submitSingleReview = async (review, index) => {
+  const submitSingleReview = async (review: any, _index: number) => {
     setLoading(true);
     setError("");
     setSuccess("");
@@ -111,7 +101,7 @@ const AddReview = () => {
       const response = await axiosInstance.get(`courses/${courseId}`);
       setExistingReviews(response.data?.data?.course?.reviews || []);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save review.");
+      setError((err as any).response?.data?.message || "Failed to save review.");
     } finally {
       setLoading(false);
     }
@@ -157,7 +147,7 @@ const AddReview = () => {
     }
   };
 
-  const deleteExistingReview = async (reviewId) => {
+  const deleteExistingReview = async (reviewId: string) => {
     if (!window.confirm("Delete this review?")) return;
     setLoading(true);
     try {
@@ -359,7 +349,7 @@ const AddReview = () => {
                 />
                 <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400" />
                 <p className="text-sm text-gray-500 font-medium">
-                  {review.image ? review.image.name : "Click or drag to upload photo"}
+                  {review.image ? (review.image as any).name : "Click or drag to upload photo"}
                 </p>
               </div>
             </div>

@@ -6,8 +6,6 @@ import {
   updateEvent,
   deleteEvent,
 } from "../../store/slices/event";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import PageMeta from "../../components/common/PageMeta";
 import QuillEditor from "../../components/QuillEditor";
 import PopupAlert from "../../components/popUpAlert";
 
@@ -77,7 +75,7 @@ interface EventFormData {
 }
 
 // Custom Popup Component for success/error messages
-const CustomPopup = ({
+const _CustomPopup = ({
   popup,
   onClose,
 }: {
@@ -184,7 +182,7 @@ const EditEvent = () => {
 
   useEffect(() => {
     if (data && data?.data) {
-      const event = data?.data as Event;
+      const event = data?.data as any;
       // Convert price from MongoDB decimal or number to a regular number
       const initialPrice =
         typeof event.price === "object" && "$numberDecimal" in event.price
@@ -347,7 +345,7 @@ const EditEvent = () => {
         show: true,
         type: "error",
         title: "Error!",
-        message: error.message || "Failed to update event",
+        message: (error as any).message || "Failed to update event",
       });
     }
   };
@@ -727,7 +725,7 @@ const EditEvent = () => {
                 <input
                   type="number"
                   name="price"
-                  value={formData.price}
+                  value={formData.price as any}
                   onChange={handleInputChange}
                   min="0"
                   step="0.01"

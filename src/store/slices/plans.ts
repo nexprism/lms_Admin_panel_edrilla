@@ -47,7 +47,7 @@ export const deletePricingPlan = createAsyncThunk(
 // UPDATE
 export const updatePricingPlan = createAsyncThunk(
   "pricing/updatePricingPlan",
-  async ({ planId, updatedData }, { rejectWithValue }) => {
+  async ({ planId, updatedData }: any, { rejectWithValue }) => {
     try {
       // Ensure status is included in updatedData if present
       const response = await axiosInstance.put(
@@ -85,7 +85,7 @@ const pricingPlanSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(createPricingPlan.fulfilled, (state, action) => {
+      .addCase(createPricingPlan.fulfilled, (state, _action) => {
         state.loading = false;
         // state.data = action.payload;
       })
@@ -98,7 +98,7 @@ const pricingPlanSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deletePricingPlan.fulfilled, (state, action) => {
+      .addCase(deletePricingPlan.fulfilled, (state, _action) => {
         state.loading = false;
         // state.data = action.payload;
       })
@@ -111,7 +111,7 @@ const pricingPlanSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePricingPlan.fulfilled, (state, action) => {
+      .addCase(updatePricingPlan.fulfilled, (state, _action) => {
         state.loading = false;
         // state.data = { ...state.data, ...action.payload };
       })

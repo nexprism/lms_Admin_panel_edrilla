@@ -6,31 +6,10 @@ import {
   resetFilters,
   updateDeleteRequestStatus,
 } from "../../store/slices/deleteRequests";
-import {
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Calendar,
-  User,
-  Mail,
-  FileText,
-  Eye,
-  X,
-  Hash,
-  UserCheck,
-  Check,
-  Ban,
-  Edit,
-} from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, RotateCcw, CheckCircle, XCircle, Clock, Mail, X, Edit } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Link } from "react-router";
 
 interface DeleteRequest {
   _id: string;
@@ -152,7 +131,7 @@ const DeleteRequestsList: React.FC = () => {
     dispatch(resetFilters());
   };
 
-  const handleViewDetails = (request: DeleteRequest) => {
+  const _handleViewDetails = (request: DeleteRequest) => {
     setSelectedRequest(request);
     setShowModal(true);
   };
@@ -180,7 +159,7 @@ const DeleteRequestsList: React.FC = () => {
         id: actionRequestId,
         status,
         notes: additionalNotes.trim() || undefined
-      })).unwrap();
+      } as any)).unwrap();
 
       // Success - close dialog and reset state
       setShowConfirmDialog(false);

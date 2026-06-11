@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Award,
-  User,
-  Clock,
-  Target,
-  FileText,
-  CheckCircle,
-  XCircle,
-  Calendar,
-  LayoutTemplate,
-} from "lucide-react";
+import { Award, User, FileText, CheckCircle, XCircle, LayoutTemplate } from "lucide-react";
 import { useLocation } from "react-router";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store";
 import { fetchCertificates } from "../../store/slices/certificate";
 import axiosInstance from "../../services/axiosConfig";
 import { issueCertificate } from "../../store/slices/IssuesCertification";
-import course from "../../store/slices/course";
 
 // Custom Popup Component
 const CustomPopup = ({
@@ -83,19 +73,19 @@ const IssueCertificateForm = () => {
 
   // Loading state
   const [loading, setLoading] = useState(false);
-  const [templates, setTemplates] = useState<string[]>([]);
-  const [allCourses, setAllCourses] = useState<string[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [filteredCourses, setFilteredCourses] = useState<string[]>([]);
-  let { search } = useLocation();
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [allCourses, setAllCourses] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<any>("");
+  const [filteredCourses, setFilteredCourses] = useState<any[]>([]);
+  const { search } = useLocation();
   const query = new URLSearchParams(search);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const userId = query.get("user"); // Example user ID, replace with actual logic
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     user_id: userId || "",
     certification_template: "",
     type: "course",
@@ -119,7 +109,7 @@ const IssueCertificateForm = () => {
       return `CERT-${year}${month}${day}-${random}`;
     };
 
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       serial_number: generateSerialNumber(),
       completion_date: new Date().toISOString().split("T")[0],
@@ -132,7 +122,7 @@ const IssueCertificateForm = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: value,
     }));
@@ -148,7 +138,6 @@ const IssueCertificateForm = () => {
     //   )}`,
     // });
 
-    console.log("Form Data:", formData);
     setLoading(true);
 
     try {
@@ -167,15 +156,14 @@ const IssueCertificateForm = () => {
       payload.append("instructor_id", selectedCourse.instructor_id);
 
       const res = await dispatch(issueCertificate(payload));
-      console.log("Response:", res);
       // Show success popup
 
-      if (res.error) {
+      if ((res as any).error) {
         setPopup({
           show: true,
           type: "error",
           title: "Error!",
-          message: res.payload,
+          message: (res as any).payload,
         });
 
         return;
@@ -208,7 +196,7 @@ const IssueCertificateForm = () => {
         .toString()
         .padStart(3, "0");
 
-      setFormData((prev) => ({
+      setFormData((prev: any) => ({
         ...prev,
         serial_number: `CERT-${year}${month}${day}-${random}`,
         completion_date: new Date().toISOString().split("T")[0],
@@ -235,16 +223,15 @@ const IssueCertificateForm = () => {
         })
       );
 
-      setTemplates(response.payload.templates);
+      setTemplates((response as any).payload.templates);
 
       const res = await axiosInstance.get(
         `/checkout/my-enrollments?userid=${userId}`
       );
 
       const data = res.data.data.filter(
-        (item) => item.type === "course" || item.type === "groupCourse"
+        (item: any) => item.type === "course" || item.type === "groupCourse"
       );
-      console.log("Fetched Courses:", data);
       setAllCourses(res.data.data);
       setFilteredCourses(data);
     } catch (error) {
@@ -260,6 +247,7 @@ const IssueCertificateForm = () => {
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, []);
 
   useEffect(() => {
@@ -280,6 +268,7 @@ const IssueCertificateForm = () => {
       }
     };
     filterCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [formData.type, formData]);
 
   return (

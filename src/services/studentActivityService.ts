@@ -9,15 +9,10 @@ import axiosInstance from './axiosConfig';
  */
 export const getStudentForumPosts = async (userId: string, page: number = 1, limit: number = 10) => {
   try {
-    // For admin, we'll need to use a different endpoint or pass userId as query param
-    // Since /forum/my-threads is for authenticated user, we might need an admin endpoint
-    // For now, using a workaround: fetch all threads and filter, or use admin endpoint if available
-    const response = await axiosInstance.get(`/forum/my-threads`, {
-      params: { 
-        page, 
-        limit,
-        userId // Pass userId if backend supports it
-      }
+    // Admin-gated backend route: GET /admin/students/:id/forum-posts
+    // Returns { success, message, data: ForumThread[], total, page, limit, totalPages }
+    const response = await axiosInstance.get(`/admin/students/${userId}/forum-posts`, {
+      params: { page, limit }
     });
     return response.data;
   } catch (error) {
@@ -35,15 +30,14 @@ export const getStudentForumPosts = async (userId: string, page: number = 1, lim
  */
 export const getStudentForumReplies = async (userId: string, page: number = 1, limit: number = 10) => {
   try {
-    // This might need a custom admin endpoint
-    // For now, we'll try to get replies from threads
+    // Admin-gated backend route: GET /admin/students/:id/forum-replies
+    // Returns { success, message, data: ForumReply[], total, page, limit, totalPages }
     const response = await axiosInstance.get(`/admin/students/${userId}/forum-replies`, {
       params: { page, limit }
     });
     return response.data;
   } catch (error) {
     console.error("Error fetching student forum replies:", error);
-    // Return empty data if endpoint doesn't exist yet
     return { data: [], total: 0, page: 1, totalPages: 0 };
   }
 };
@@ -57,13 +51,10 @@ export const getStudentForumReplies = async (userId: string, page: number = 1, l
  */
 export const getStudentJobPosts = async (userId: string, page: number = 1, limit: number = 10) => {
   try {
-    // Similar to forum posts, might need admin endpoint
-    const response = await axiosInstance.get(`/jobs/my-posts`, {
-      params: { 
-        page, 
-        limit,
-        userId // Pass userId if backend supports it
-      }
+    // Admin-gated backend route: GET /admin/students/:id/job-posts
+    // Returns { success, message, data: JobPosting[], total, page, limit, totalPages }
+    const response = await axiosInstance.get(`/admin/students/${userId}/job-posts`, {
+      params: { page, limit }
     });
     return response.data;
   } catch (error) {

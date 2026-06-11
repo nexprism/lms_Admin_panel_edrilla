@@ -140,7 +140,7 @@ export default function CategorySubcategoryDropdowns({
       }
 
       if (popupFor === "category") {
-        await dispatch(createCourseCategory(formData)).unwrap();
+        await dispatch(createCourseCategory(formData as any)).unwrap();
         toast.success("New category added successfully!");
         // Refetch categories to update the dropdown
         await dispatch(
@@ -154,7 +154,7 @@ export default function CategorySubcategoryDropdowns({
           })
         ).unwrap();
       } else if (popupFor === "subcategory") {
-        await dispatch(createSubCategory(formData)).unwrap();
+        await dispatch(createSubCategory(formData as any)).unwrap();
         toast.success("New subcategory added successfully!");
         // Refetch subcategories for the selected category
         if (selectedCategoryId) {

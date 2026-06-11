@@ -87,9 +87,8 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     // Create the main category and get the result (should include the new category's ID)
-    const createdCategory = await dispatch(createCourseCategory(formData) as any).unwrap();
+    const createdCategory = await dispatch(createCourseCategory(formData as any) as any).unwrap();
 
-    console.log("Created Category:", addSubcategory,subcategories, createdCategory);
 
     // If subcategories are to be added, dispatch createSubCategory for each
     if (addSubcategory && subcategories.length > 0 && createdCategory?._id) {
@@ -274,7 +273,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       </div>
        <PopupAlert 
   message={popup.message}
-  type={popup.type}
+  type={popup.type as any}
   isVisible={popup.isVisible}
   onClose={() => setPopup({ ...popup, isVisible: false })}
 />

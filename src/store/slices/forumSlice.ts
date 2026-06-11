@@ -195,12 +195,15 @@ export const createForumThread = createAsyncThunk(
       const formData = new FormData();
       formData.append("title", data.title);
       formData.append("content", data.content);
-      data.tags.forEach((tag, index) => formData.append(`tags[${index}]`, tag));
+      // Repeat the "tags" field so multer collects req.body.tags as an array
+      // (bracketed keys like tags[0] are kept literally and dropped by mongoose).
+      data.tags.forEach((tag) => formData.append("tags", tag));
       if (data.files && data.files.length > 0) {
         data.files.forEach((file) => formData.append("files", file));
       }
 
-      const response = await axiosInstance.post("/forum/thread", formData, {
+      // Backend route is POST /forum/create (forumRoutes.js) — there is no POST /forum/thread.
+      const response = await axiosInstance.post("/forum/create", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

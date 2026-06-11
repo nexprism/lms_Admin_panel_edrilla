@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 interface PopupAlertProps {
   message: string;
@@ -22,14 +22,6 @@ const PopupAlert: React.FC<PopupAlertProps> = ({
   if (!isVisible) return null;
 
   const showConfirm = typeof onConfirm === "function";
-
-  useEffect(() => {
-    if (isVisible) {
-      // debug log to help trace popup mounting
-      // eslint-disable-next-line no-console
-      console.log("PopupAlert visible", { type, message });
-    }
-  }, [isVisible, type, message]);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center" style={{ zIndex: 999999 }} role="dialog" aria-modal="true">
@@ -85,7 +77,7 @@ const PopupAlert: React.FC<PopupAlertProps> = ({
               </button>
               <button
                 onClick={() => {
-                  onConfirm && onConfirm();
+                  if (onConfirm) onConfirm();
                 }}
                 className="flex-1 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
               >

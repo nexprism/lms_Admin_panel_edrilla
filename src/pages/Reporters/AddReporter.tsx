@@ -25,7 +25,7 @@ const AddReporter: React.FC = () => {
       // Use explicit URL to match provided curl example
       const url = `/signup`;
 
-      const response = await axios.post(url, payload);
+      const _response = await axios.post(url, payload);
 
       toastConfig.success('Reporter created successfully');
 

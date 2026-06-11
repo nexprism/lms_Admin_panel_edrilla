@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 interface LessonState {
@@ -56,7 +55,7 @@ export const updateLesson = createAsyncThunk(
     {
       lessonId,
       lessonData,
-      token,
+      token: _token,
     }: {
       lessonId: string;
       lessonData: {
@@ -189,7 +188,7 @@ const lessonSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteLesson.fulfilled, (state, action) => {
+      .addCase(deleteLesson.fulfilled, (state, _action) => {
         state.loading = false;
         // Clear the data if this lesson was deleted
         state.data = null;

@@ -10,22 +10,7 @@ import type { OutputData } from "@editorjs/editorjs";
 import PopupAlert from "../../components/popUpAlert";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import {
-  Save,
-  X,
-  FileText,
-  User,
-  Tag,
-  Upload,
-  Clock,
-  TrendingUp,
-  Hash,
-  Video,
-  Calendar,
-  Zap,
-  Loader2,
-  Trash2,
-} from "lucide-react";
+import { Save, X, FileText, User, Tag, Upload, Clock, TrendingUp, Hash, Video, Calendar, Zap, Loader2 } from "lucide-react";
 
 const predefinedTags = [
   "breaking",
@@ -183,9 +168,9 @@ export default function EditNews() {
           url: (currentNews.source as any)?.url || "",
         },
         url: currentNews.url || "",
-        imageUrl: currentNews.imageUrl || currentNews.coverImage || "",
-        existingImageUrl: currentNews.imageUrl || currentNews.coverImage || "",
-        videoUrl: currentNews.videoUrl || currentNews.video || "",
+        imageUrl: currentNews.imageUrl || (currentNews as any).coverImage || "",
+        existingImageUrl: currentNews.imageUrl || (currentNews as any).coverImage || "",
+        videoUrl: currentNews.videoUrl || (currentNews as any).video || "",
         language: currentNews.language || "en",
         country: currentNews.country || "",
         tags: currentNews.tags || [],
@@ -966,7 +951,7 @@ export default function EditNews() {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />
     </>

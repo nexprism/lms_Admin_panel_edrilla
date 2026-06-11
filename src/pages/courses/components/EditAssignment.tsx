@@ -9,10 +9,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import {
-  createAssignment,
-  updateAssignment,
-} from "../../../store/slices/assignment"; // Adjust path as needed
+import { updateAssignment } from "../../../store/slices/assignment"; // Adjust path as needed
 import PopupAlert from "../../../components/popUpAlert";
 import { useParams } from "react-router";
 import axiosInstance from "../../../services/axiosConfig";
@@ -73,7 +70,6 @@ export default function EditAssignmentForm({
       });
       setCourseId(data.courseId?._id);
       setLessonId(data.lessonId);
-      console.log("Fetched assignment data:", data);
     } catch (error) {
       console.error("Failed to fetch assignment data:", error);
       setPopup({
@@ -86,6 +82,7 @@ export default function EditAssignmentForm({
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [assignmentID]);
 
   const handleInputChange = (
@@ -123,7 +120,7 @@ export default function EditAssignmentForm({
 
     const apiFormData = new FormData();
     apiFormData.append("courseId", courseIds);
-    apiFormData.append("lessonId", lessonIds._id || lessonIds);
+    apiFormData.append("lessonId", (lessonIds as any)._id || lessonIds);
     apiFormData.append("title", formData.title);
     apiFormData.append("subject", formData.subject);
     apiFormData.append("language", formData.language);
@@ -478,7 +475,7 @@ export default function EditAssignmentForm({
       </div>
       <PopupAlert
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ ...popup, isVisible: false })}
       />

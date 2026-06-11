@@ -1,42 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  BookOpen,
-  FileText,
-  DollarSign,
-  Users,
-  Clock,
-  Tag,
-  Image,
-  Video,
-  Plus,
-  X,
-  Award,
-  Download,
-  MessageCircle,
-  Lock,
-  Calendar,
-  Upload,
-  Menu,
-  Save,
-  Loader2,
-  AlertCircle,
-  Type,
-  CheckCircle,
-  ArrowRight,
-  Sparkles,
-  Target,
-  BookOpenCheck,
-  PlayCircle,
-  FileEdit,
-  Layers,
-  Layout,
-} from "lucide-react";
+import { BookOpen, FileText, DollarSign, Users, Clock, Tag, Image, Video, Plus, X, Award, Download, MessageCircle, Lock, Calendar, Upload, Menu, Loader2, AlertCircle, Type, CheckCircle, ArrowRight, Sparkles, Target, BookOpenCheck, PlayCircle, FileEdit, Layers, Layout } from "lucide-react";
 import { createCourse } from "../../store/slices/course";
 import CategorySubcategoryDropdowns from "../../components/CategorySubcategoryDropdowns";
 import PopupAlert from "../../components/popUpAlert";
 import { useNavigate } from "react-router-dom";
-import Editor from "../../components/Editor";
 import QuillEditor from "../../components/QuillEditor";
 import LandingPageSections from "./LandingPageSections";
 // Validation schema
@@ -491,7 +459,7 @@ const AddCourse = () => {
     const { name, value } = target;
     const type = (target as HTMLInputElement).type;
     const checked = type === "checkbox" ? (target as HTMLInputElement).checked : undefined;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -537,7 +505,7 @@ const AddCourse = () => {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       categoryId,
       subCategoryId: "",
@@ -546,7 +514,7 @@ const AddCourse = () => {
   };
 
   const handleSubcategoryChange = (subCategoryId: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       subCategoryId,
     }));
@@ -584,7 +552,6 @@ const AddCourse = () => {
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      console.log(errors);
       setPopup({
         isVisible: true,
         message: "Please fix the errors in the form",
@@ -843,7 +810,7 @@ const AddCourse = () => {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />
       <aside
@@ -1665,7 +1632,7 @@ const AddCourse = () => {
                     Mentor Achievements
                   </label>
                   <div className="space-y-2">
-                    {(formData.mentorAchievements || []).map((achievement, index) => (
+                    {(formData.mentorAchievements || []).map((achievement: any, index: any) => (
                       <div key={index} className="flex gap-2">
                         <input
                           type="text"
@@ -1681,7 +1648,7 @@ const AddCourse = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            const updated = (formData.mentorAchievements || []).filter((_, i) => i !== index);
+                            const updated = (formData.mentorAchievements || []).filter((_: any, i: any) => i !== index);
                             setFormData({ ...formData, mentorAchievements: updated });
                           }}
                           className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"

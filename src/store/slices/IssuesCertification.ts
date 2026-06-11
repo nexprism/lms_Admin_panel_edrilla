@@ -31,7 +31,7 @@ export const issueCertificate = createAsyncThunk(
 export const fetchIssuedCertificates = createAsyncThunk(
   "issueCertificate/fetchIssuedCertificates",
   async (
-    params?: { page?: number; limit?: number; search?: string },
+    params: { page?: number; limit?: number; search?: string } | undefined,
     { rejectWithValue }
   ) => {
     try {

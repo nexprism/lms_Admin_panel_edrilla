@@ -61,6 +61,10 @@ const AITool: React.FC = () => {
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  // Track active polling timeouts so they can be cleared on unmount, plus a
+  // mounted flag to avoid setState after the component has unmounted.
+  const pollTimeouts = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const isMounted = useRef(true);
 
   // Fetch chat history
   const fetchChatHistory = async () => {
@@ -173,7 +177,6 @@ const AITool: React.FC = () => {
                   if (data.chatRoomId) {
                     currentRoomId = data.chatRoomId;
                     setSelectedRoomId(currentRoomId);
-                    console.log('Chat room ID set:', currentRoomId);
                   }
                   // Reset event type after processing
                   currentEventType = '';
@@ -234,7 +237,6 @@ const AITool: React.FC = () => {
               if (e instanceof Error && currentEventType === 'error') {
                 throw e;
               }
-              console.warn('Failed to parse SSE data:', e, line);
             }
           }
         }
@@ -263,8 +265,7 @@ const AITool: React.FC = () => {
                 });
               }
             }
-          } catch (e) {
-            console.warn('Failed to parse remaining buffer:', e);
+          } catch (e) { /* ignore */ 
           }
         }
       }
@@ -346,9 +347,13 @@ const AITool: React.FC = () => {
   };
 
   // Poll status for a knowledge base item
-  const pollItemStatus = async (itemId: string) => {
+  const MAX_POLL_ATTEMPTS = 60; // ~2 minutes at 2s intervals
+  const pollItemStatus = async (itemId: string, attempt = 0) => {
+    // Stop if the component unmounted or we've exhausted the retry budget.
+    if (!isMounted.current || attempt >= MAX_POLL_ATTEMPTS) return;
     try {
       const { data } = await axiosInstance.get(`/ai/knowledge/${itemId}`);
+      if (!isMounted.current) return;
       const status = data.item.status;
 
       if (status === 'completed' || status === 'failed') {
@@ -359,8 +364,12 @@ const AITool: React.FC = () => {
           )
         );
       } else {
-        // Still pending or processing, poll again in 2 seconds
-        setTimeout(() => pollItemStatus(itemId), 2000);
+        // Still pending or processing, poll again in 2 seconds.
+        const id = setTimeout(() => {
+          pollTimeouts.current.delete(id);
+          pollItemStatus(itemId, attempt + 1);
+        }, 2000);
+        pollTimeouts.current.add(id);
       }
     } catch (error) {
       console.error('Polling error for item', itemId, error);
@@ -470,6 +479,18 @@ const AITool: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Clear any pending polling timers and stop further setState on unmount.
+  useEffect(() => {
+    isMounted.current = true;
+    // Capture the ref's Set so cleanup clears the same instance (the ref is never reassigned).
+    const timeouts = pollTimeouts.current;
+    return () => {
+      isMounted.current = false;
+      timeouts.forEach(clearTimeout);
+      timeouts.clear();
+    };
+  }, []);
 
   const startNewChat = () => {
     setSelectedRoomId(null);
@@ -581,7 +602,7 @@ const AITool: React.FC = () => {
                         <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-800 dark:prose-p:text-gray-200 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-code:text-blue-600 dark:prose-code:text-blue-400 prose-pre:bg-gray-800 dark:prose-pre:bg-gray-900 prose-pre:text-gray-100">
                           <ReactMarkdown
                             components={{
-                              code: ({ node, inline, className, children, ...props }: any) => {
+                              code: ({ node: _node, inline, className, children, ...props }: any) => {
                                 const match = /language-(\w+)/.exec(className || '');
                                 return !inline && match ? (
                                   <pre className="bg-gray-800 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">

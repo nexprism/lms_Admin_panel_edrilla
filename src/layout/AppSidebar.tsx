@@ -2,24 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
-import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
-  TaskIcon,
-  VideoIcon,
-} from "../icons";
+import { BoxCubeIcon, CalenderIcon, ChevronDownIcon, GridIcon, HorizontaLDots, ListIcon, PageIcon, PieChartIcon, TableIcon, UserCircleIcon, TaskIcon, VideoIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { Files, Tag, UserCircle2Icon, Bell, MessageCircle, Bot } from "lucide-react";
+import { Tag, UserCircle2Icon, Bell, MessageCircle, Bot } from "lucide-react";
 
 type NavSubItem = {
   name: string;
@@ -243,7 +229,7 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
 
-  const [userRole, setUserRole] = useState<string | null>(() => {
+  const [userRole, _setUserRole] = useState<string | null>(() => {
     try {
       let role = localStorage.getItem("role");
       if (!role) {

@@ -14,11 +14,11 @@ const ForumThreadList: React.FC = () => {
   const navigate = useNavigate();
 
   const [searchInput, setSearchInput] = useState("");
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [selectedThread, setSelectedThread] = useState<any | null>(null);
-  const [modalStatus, setModalStatus] = useState("");
+  const [_showStatusModal, _setShowStatusModal] = useState(false);
+  const [selectedThread, _setSelectedThread] = useState<any | null>(null);
+  const [_modalStatus, _setModalStatus] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
+  const [_modalError, setModalError] = useState<string | null>(null);
   const [openSourceLoading, setOpenSourceLoading] = useState<string | null>(null);
   const [openSourceError, setOpenSourceError] = useState<string | null>(null);
 

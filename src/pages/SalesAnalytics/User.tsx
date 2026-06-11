@@ -2,23 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../store";
 import { fetchUserSalesAnalytics } from "../../store/slices/salesAnalyticsSlice";
-import {
-  Users,
-  ShoppingCart,
-  TrendingUp,
-  Search,
-  SortAsc,
-  SortDesc,
-  Filter,
-  Loader,
-  XCircle,
-  User as UserIcon,
-  Mail,
-  Eye,
-  Award,
-  Target,
-  Activity,
-} from "lucide-react";
+import { Users, ShoppingCart, Search, SortAsc, SortDesc, Filter, Loader, XCircle, User as UserIcon, Mail, Eye, Award, Target } from "lucide-react";
 
 interface UserData {
   _id: string;
@@ -80,7 +64,7 @@ const User: React.FC = () => {
   const filteredAndSortedUsers = useMemo(() => {
     if (!userData || !Array.isArray(userData)) return [];
 
-    let filtered = userData.filter((user) =>
+    const filtered = userData.filter((user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );

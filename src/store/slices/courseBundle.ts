@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosInstance from '../../services/axiosConfig';
 
 interface CourseBundleState {
@@ -55,7 +54,6 @@ export const fetchCourseBundles = createAsyncThunk<
                 },
             });
             const data = response.data;
-            console.log('Fetched course bundles:', data);
             return {
                 bundles: data?.data || [],
                 total: data?.total || 0,

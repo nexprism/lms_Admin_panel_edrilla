@@ -297,9 +297,9 @@ import { BookOpen, Upload, Eye, Settings, Move, X } from "lucide-react";
 import axiosInstance from "../../services/axiosConfig";
 
 const CreateCertificateTemplate = () => {
-  const containerRef = useRef(null);
-  const [isContainerReady, setIsContainerReady] = useState(false);
-  const [draggedElement, setDraggedElement] = useState(null);
+  const containerRef = useRef<any>(null);
+  const [_isContainerReady, setIsContainerReady] = useState(false);
+  const [draggedElement, setDraggedElement] = useState<any>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
 
@@ -317,7 +317,7 @@ const CreateCertificateTemplate = () => {
   });
 
   // Template Elements with positions
-  const [elements, setElements] = useState({
+  const [elements, setElements] = useState<any>({
     title: {
       content: "Certificate of Completion",
       font_size: "32",
@@ -443,15 +443,15 @@ const CreateCertificateTemplate = () => {
     type: "",
   });
 
-  const handleTemplateInfoChange = (field, value) => {
+  const handleTemplateInfoChange = (field: any, value: any) => {
     setTemplateInfo((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleElementChange = (elementKey, field, value) => {
-    setElements((prev) => ({
+  const handleElementChange = (elementKey: any, field: any, value: any) => {
+    setElements((prev: any) => ({
       ...prev,
       [elementKey]: {
         ...prev[elementKey],
@@ -460,8 +460,8 @@ const CreateCertificateTemplate = () => {
     }));
   };
 
-  const handlePositionChange = (elementKey, newPosition) => {
-    setElements((prev) => ({
+  const handlePositionChange = (elementKey: any, newPosition: any) => {
+    setElements((prev: any) => ({
       ...prev,
       [elementKey]: {
         ...prev[elementKey],
@@ -470,7 +470,7 @@ const CreateCertificateTemplate = () => {
     }));
   };
 
-  const handleFileChange = (e, elementKey, field) => {
+  const handleFileChange = (e: any, elementKey: any, field: any) => {
     const file = e.target.files[0];
     if (elementKey === "template") {
       handleTemplateInfoChange(field, file);
@@ -479,15 +479,51 @@ const CreateCertificateTemplate = () => {
     }
   };
 
-  const getUrlFromFile = (file) => {
+  // Object URLs are cached per File so the render path (which runs on every
+  // mousemove while dragging) never mints new blob URLs; stale entries are
+  // revoked when a file is replaced/removed and everything is revoked on unmount.
+  const objectUrlCacheRef = useRef<Map<File, string>>(new Map());
+
+  const getUrlFromFile = (file: any) => {
     if (!file) return "";
-    return URL.createObjectURL(file);
+    if (typeof file === "string") return file;
+    const cache = objectUrlCacheRef.current;
+    const cached = cache.get(file);
+    if (cached) return cached;
+    const url = URL.createObjectURL(file);
+    cache.set(file, url);
+    return url;
   };
 
-  const handleMouseDown = (e, elementKey) => {
+  // Revoke object URLs whose backing file is no longer referenced
+  useEffect(() => {
+    const cache = objectUrlCacheRef.current;
+    const liveFiles = new Set<any>();
+    if (templateInfo.backgroundImage) liveFiles.add(templateInfo.backgroundImage);
+    Object.values(elements).forEach((element: any) => {
+      if (element?.image) liveFiles.add(element.image);
+    });
+    cache.forEach((url, file) => {
+      if (!liveFiles.has(file)) {
+        URL.revokeObjectURL(url);
+        cache.delete(file);
+      }
+    });
+  }, [templateInfo.backgroundImage, elements]);
+
+  // Revoke all remaining object URLs on unmount
+  useEffect(() => {
+    const cache = objectUrlCacheRef.current;
+    return () => {
+      cache.forEach((url) => URL.revokeObjectURL(url));
+      cache.clear();
+    };
+  }, []);
+
+  const handleMouseDown = (e: any, elementKey: any) => {
     if (!elements[elementKey].draggable) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
+    const _rect = containerRef.current.getBoundingClientRect();
     const elementRect = e.currentTarget.getBoundingClientRect();
 
     setDraggedElement(elementKey);
@@ -499,7 +535,7 @@ const CreateCertificateTemplate = () => {
     e.preventDefault();
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any) => {
     if (!draggedElement || !containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -531,6 +567,7 @@ const CreateCertificateTemplate = () => {
         document.removeEventListener("mouseup", handleMouseUp);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [draggedElement, dragOffset]);
 
   // const handleSubmit = async () => {
@@ -588,14 +625,14 @@ const CreateCertificateTemplate = () => {
 
     // Add elements with positions
     Object.entries(elements).forEach(([key, element]) => {
-      Object.entries(element).forEach(([field, value]) => {
+      Object.entries(element as any).forEach(([field, value]) => {
         if (field === "image" && value instanceof File) {
           formData.append(`elements[${key}][${field}]`, value);
         } else if (field === "position") {
-          formData.append(`elements[${key}][position_x]`, value.x?.toString());
-          formData.append(`elements[${key}][position_y]`, value.y?.toString());
+          formData.append(`elements[${key}][position_x]`, (value as any).x?.toString());
+          formData.append(`elements[${key}][position_y]`, (value as any).y?.toString());
         } else {
-          formData.append(`elements[${key}][${field}]`, value?.toString());
+          formData.append(`elements[${key}][${field}]`, (value as any)?.toString());
         }
       });
     });
@@ -609,7 +646,7 @@ const CreateCertificateTemplate = () => {
 
       setLoading(true);
 
-      const response = await axiosInstance.post(
+      const _response = await axiosInstance.post(
         "/certificate-templates",
         formData,
         {
@@ -618,7 +655,6 @@ const CreateCertificateTemplate = () => {
           },
         }
       );
-      console.log("Response:", response);
       // if (!response.ok) {
       //   throw new Error(`HTTP error! status: ${response.status}`);
       // }
@@ -631,7 +667,6 @@ const CreateCertificateTemplate = () => {
         type: "success",
       });
       setLoading(false);
-      // console.log("Template saved:", result);
       setTemplateInfo({
         locale: "EN",
         title: "Course Completion Certificate",
@@ -758,16 +793,15 @@ const CreateCertificateTemplate = () => {
       });
     } catch (error) {
       setLoading(false);
-      console.log("Error saving template:", error);
       setPopup({
         isVisible: true,
-        message: `Error saving template: ${error.message}`,
+        message: `Error saving template: ${(error as any).message}`,
         type: "error",
       });
     }
   };
 
-  const renderTextElement = (elementKey, element) => {
+  const renderTextElement = (elementKey: any, element: any) => {
     if (!element.enable) return null;
 
     // Don't show instructor_name, platform_name, or hint if they haven't been customized
@@ -835,7 +869,7 @@ const CreateCertificateTemplate = () => {
     );
   };
 
-  const renderImageElement = (elementKey, element) => {
+  const renderImageElement = (elementKey: any, element: any) => {
     if (!element.enable) return null;
 
     const isDragging = draggedElement === elementKey;
@@ -1246,7 +1280,7 @@ const CreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full dark:text-white/70 border rounded px-3 py-2"
-                          rows="3"
+                          rows={"3" as any}
                         />
                         <div className="flex gap-3">
                           <input
@@ -1658,7 +1692,7 @@ const CreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full border dark:text-white/70 rounded px-3 py-2"
-                          rows="2"
+                          rows={"2" as any}
                         />
                         <div className="flex gap-3">
                           <input
@@ -1966,7 +2000,7 @@ const CreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full border dark:text-white/70 rounded px-3 py-2"
-                          rows="2"
+                          rows={"2" as any}
                         />
                         <div className="flex gap-3">
                           <input

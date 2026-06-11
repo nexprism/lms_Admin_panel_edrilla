@@ -75,13 +75,31 @@ class YoutubeEmbed {
       
       container.appendChild(iframe);
     } else {
-      // Fallback
-      const link = document.createElement('a');
-      link.href = this.data.url;
-      link.target = '_blank';
-      link.textContent = this.data.url;
-      link.style.cssText = 'color: #ff0000; text-decoration: none; padding: 20px; display: block;';
-      container.appendChild(link);
+      // Fallback: only render a clickable link for http(s) URLs so stored
+      // block data can't smuggle javascript: (or other dangerous) schemes.
+      let isSafeUrl = false;
+      try {
+        const parsed = new URL(this.data.url, window.location.origin);
+        isSafeUrl = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        isSafeUrl = false;
+      }
+
+      const fallbackStyle = 'color: #ff0000; text-decoration: none; padding: 20px; display: block;';
+      if (isSafeUrl) {
+        const link = document.createElement('a');
+        link.href = this.data.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = this.data.url;
+        link.style.cssText = fallbackStyle;
+        container.appendChild(link);
+      } else {
+        const text = document.createElement('span');
+        text.textContent = this.data.url;
+        text.style.cssText = fallbackStyle;
+        container.appendChild(text);
+      }
     }
 
     // Add edit button

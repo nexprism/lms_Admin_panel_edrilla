@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosInstance from '../../services/axiosConfig';
 
 interface CourseCategory {
@@ -146,18 +145,9 @@ export const fetchCourseCategories = createAsyncThunk<
             queryParams.append('sort', JSON.stringify(sort));
         }
 
-        console.log('Fetching course categories with params:', {
-            page,
-            limit,
-            filters,
-            search, // Updated log
-            sort,
-            queryParams: queryParams.toString()
-        });
 
         const response = await axiosInstance.get(`/coursecategories/?${queryParams.toString()}`);
 
-        console.log('Fetched course categories:', response.data);
         
         const data = response.data?.data?.categories;
         return {

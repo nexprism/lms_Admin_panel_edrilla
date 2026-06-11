@@ -6,14 +6,11 @@ import { fetchCourses } from "../../store/slices/course";
 import { CheckCircle, XCircle, BookOpen } from "lucide-react";
 
 const EditCoupon: React.FC = () => {
-  console.log("EditCoupon component rendered");
   const { couponId } = useParams<{ couponId: string }>();
   const id = couponId; // Use couponId from route params
-  console.log("Coupon ID from params:", id);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { singleCoupon, loading, error: couponError } = useAppSelector((state) => state.coupons);
-  console.log("Redux state - loading:", loading, "singleCoupon:", singleCoupon, "error:", couponError);
 
   const [formData, setFormData] = useState({
     code: "",
@@ -45,7 +42,6 @@ const EditCoupon: React.FC = () => {
     let isMounted = true;
     
     if (id) {
-      console.log("Fetching coupon with ID:", id);
       // Clear previous coupon data first
       dispatch(clearData());
       setFormData({
@@ -65,10 +61,8 @@ const EditCoupon: React.FC = () => {
       
       dispatch(fetchCouponById(id))
         .unwrap()
-        .then((result) => {
-          if (isMounted) {
-            console.log("Coupon fetch result:", result);
-            console.log("Coupon data:", result?.data?.coupon || result);
+        .then((_result) => {
+          if (isMounted) { /* ignore */ 
           }
         })
         .catch((error) => {
@@ -108,9 +102,6 @@ const EditCoupon: React.FC = () => {
   // Populate form when coupon is loaded
   useEffect(() => {
     if (singleCoupon && singleCoupon._id) {
-      console.log("Single coupon data:", singleCoupon);
-      console.log("Coupon code:", singleCoupon.code);
-      console.log("Coupon description:", singleCoupon.description);
       
       // Helper function to get number value (handles Decimal128, string, number)
       const getNumber = (val: any): number => {
@@ -134,14 +125,16 @@ const EditCoupon: React.FC = () => {
         courseId = typeof firstCourse === 'string' ? firstCourse : (firstCourse._id || firstCourse.toString());
       }
       
-      // Format dates
+      // Format dates for the date inputs using the admin's LOCAL calendar day, so
+      // instants stored as local start-of-day/end-of-day round-trip to the same date
+      // (splitting the ISO/UTC string would show the previous day for local midnight).
       const formatDate = (date: any): string => {
         if (!date) return "";
-        if (typeof date === 'string') {
-          return date.split("T")[0];
-        }
         try {
-          return new Date(date).toISOString().split("T")[0];
+          const d = new Date(date);
+          if (isNaN(d.getTime())) return "";
+          const pad = (n: number) => String(n).padStart(2, "0");
+          return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         } catch (e) {
           return "";
         }
@@ -162,10 +155,8 @@ const EditCoupon: React.FC = () => {
         courseId: courseId,
       };
       
-      console.log("Setting form data:", newFormData);
-      setFormData(newFormData);
-    } else {
-      console.log("No coupon data available. singleCoupon:", singleCoupon);
+      setFormData(newFormData as any);
+    } else { /* ignore */ 
     }
   }, [singleCoupon]);
 
@@ -201,6 +192,17 @@ const EditCoupon: React.FC = () => {
     }
     delete payload.courseId; // Remove courseId from payload as backend expects applicableCourses
 
+    // The backend compares `now > coupon.endDate` / `now < coupon.startDate` as exact
+    // instants (lms_backend validateCoupon), so a bare "YYYY-MM-DD" endDate is cast to
+    // midnight UTC and the coupon expires on the morning of its advertised last day.
+    // Send the full span of the selected days in the admin's local timezone instead.
+    if (formData.startDate) {
+      payload.startDate = new Date(`${formData.startDate}T00:00:00.000`).toISOString();
+    }
+    if (formData.endDate) {
+      payload.endDate = new Date(`${formData.endDate}T23:59:59.999`).toISOString();
+    }
+
     try {
       await dispatch(updateCoupon({ id, couponData: payload })).unwrap();
       setPopup({
@@ -223,10 +225,6 @@ const EditCoupon: React.FC = () => {
 
   // Debug: Log current form data
   useEffect(() => {
-    console.log("Current formData:", formData);
-    console.log("Loading state:", loading);
-    console.log("Single coupon:", singleCoupon);
-    console.log("Coupon error:", couponError);
   }, [formData, loading, singleCoupon, couponError]);
 
   // Show loading state only if actively loading and no data

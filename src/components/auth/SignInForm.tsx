@@ -113,7 +113,7 @@ export default function SignInForm() {
         // Login successful - persist role and navigate based on role
         const payloadUser = result.payload?.user;
         try {
-          const roleToStore = payloadUser?.role || payloadUser?.data?.role;
+          const roleToStore = payloadUser?.role || (payloadUser as any)?.data?.role;
           if (roleToStore) {
             localStorage.setItem("role", String(roleToStore));
           }
@@ -121,7 +121,7 @@ export default function SignInForm() {
           // ignore
         }
 
-        if (payloadUser?.role === "news_editor") {
+        if ((payloadUser?.role as string) === "news_editor") {
           navigate("/news");
         } else {
           navigate("/");
@@ -229,26 +229,21 @@ export default function SignInForm() {
                 </div>
                 
                 <div>
-                  <button
+                  <Button
                     className="w-full"
+                    size="sm"
                     type="submit"
                     disabled={isLoading}
                   >
-                    <Button 
-                      className="w-full" 
-                      size="sm"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Signing in...
-                        </div>
-                      ) : (
-                        "Sign in"
-                      )}
-                    </Button>
-                  </button>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Signing in...
+                      </div>
+                    ) : (
+                      "Sign in"
+                    )}
+                  </Button>
                 </div>
               </div>
             </form>

@@ -96,10 +96,10 @@ const CourseNotificationSender: React.FC = () => {
     if (!token) return;
     
     try {
-      await dispatch(sendCourseNotification({ 
-        ...form, 
-        token 
-      }) as any).unwrap();
+      await dispatch(sendCourseNotification({
+        ...form,
+        token
+      } as any) as any).unwrap();
     } catch (err) {
       // Error is handled by the slice
       console.error('Failed to send notification:', err);

@@ -272,7 +272,6 @@ const VideoLesson: React.FC<VideoLessonProps> = ({
     });
 
     showSuccessMessage();
-    console?.log("data", data)
 
     return data.filePath; // <--- Return merged file path
   };
@@ -309,7 +308,6 @@ const VideoLesson: React.FC<VideoLessonProps> = ({
         status: videoData.status || "",
       });
       
-      console.log("Fetched VdoCipher video data:", videoData);
     } catch (error) {
       console.error("Error fetching video data:", error);
       setPopup({
@@ -324,6 +322,7 @@ const VideoLesson: React.FC<VideoLessonProps> = ({
     if (fileId) {
       getData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [fileId]);
 
   useEffect(() => {
@@ -536,9 +535,7 @@ const VideoLesson: React.FC<VideoLessonProps> = ({
         
         // Only upload chunks for VdoCipher file uploads in edit mode
         if (form.sourcePlatform === "videocypher" && form.uploadMethod === "file" && form.file) {
-          console.log("Starting chunked upload for file:", form.file.name);
           finalPath = await uploadInChunks(form.file);
-          console?.log("finalPath", finalPath);
         }
 
         response = await dispatch(
@@ -596,7 +593,6 @@ const VideoLesson: React.FC<VideoLessonProps> = ({
         );
       }
       
-      console.log("Video operation response:", response);
       
       // For YouTube, show immediate success without progress
       if (form.sourcePlatform === "youtube") {

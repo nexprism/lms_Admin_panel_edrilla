@@ -1,18 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Plus,
-  Trash2,
-  Edit3,
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Zap,
-  CheckCircle,
-  Clock,
-  Copy
-} from "lucide-react";
+import { Plus, Trash2, Edit3, Search, X, ChevronLeft, ChevronRight, Eye, CheckCircle, Clock, Copy } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchNews, deleteNews } from "../../store/slices/news";
 import { useNavigate } from "react-router-dom";
@@ -142,7 +129,7 @@ export default function NewsList() {
     const author = (item.author?.name || "").toString().toLowerCase();
     const categories = Array.isArray(item.categories) 
       ? item.categories.join(" ").toLowerCase()
-      : (item.categories || "").toString().toLowerCase();
+      : ((item.categories || "") as any).toString().toLowerCase();
     return (
       title.includes(q) ||
       summary.includes(q) ||
@@ -509,6 +496,7 @@ export default function NewsList() {
           </div>
         )}
 
+        {/* @ts-ignore - styled-jsx attribute not in React types */}
         <style jsx>{`
           @keyframes fadeIn {
             from { opacity: 0; }
@@ -539,7 +527,7 @@ export default function NewsList() {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />
     </>

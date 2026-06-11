@@ -125,10 +125,8 @@ export const fetchCouponById = createAsyncThunk(
   "coupons/fetchCouponById",
   async (id: string, { rejectWithValue }) => {
     try {
-      console.log("API Call: GET /coupons/" + id);
       // Add cache-busting headers to prevent 304 Not Modified responses
       const res = await axiosInstance.get(`/coupons/${id}`);
-      console.log("API Response:", res.data);
       return res.data;
     } catch (err: any) {
       console.error("API Error:", err);
@@ -192,11 +190,14 @@ const couponsSlice = createSlice({
         state.loading = true; 
         state.error = null; 
       })
-      .addCase(createCoupon.fulfilled, (state, action) => { 
-        state.loading = false; 
-        // Add the new coupon to the existing data if it exists
-        if (state.data?.data?.coupons) {
-          state.data.data.coupons.unshift(action.payload);
+      .addCase(createCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        // Unwrap the coupon from the API envelope { success, data, message }
+        // before mutating state. Inserting the raw envelope would push an object
+        // without _id/code/usedBy, crashing the list on render.
+        const coupon = action.payload?.data?.coupon ?? action.payload?.data;
+        if (coupon && state.data?.data?.coupons) {
+          state.data.data.coupons.unshift(coupon);
         }
       })
       .addCase(createCoupon.rejected, (state, action) => { 
@@ -239,10 +240,8 @@ const couponsSlice = createSlice({
       })
       .addCase(fetchCouponById.fulfilled, (state, action) => { 
         state.loading = false; 
-        console.log("Reducer - Full payload:", action.payload);
         // Extract coupon from response data structure: { success: true, data: { coupon }, ... }
         const coupon = action.payload?.data?.coupon || action.payload?.coupon || action.payload;
-        console.log("Reducer - Extracted coupon:", coupon);
         state.singleCoupon = coupon; 
       })
       .addCase(fetchCouponById.rejected, (state, action) => { 
@@ -258,9 +257,12 @@ const couponsSlice = createSlice({
       })
       .addCase(updateCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        if (state.data?.data?.coupons) {
-          state.data.data.coupons = state.data.data.coupons.map(c => 
-            c._id === action.payload._id ? action.payload : c
+        // Unwrap the coupon from the API envelope before matching, otherwise
+        // action.payload._id is undefined and no row is ever updated.
+        const coupon = action.payload?.data?.coupon ?? action.payload?.data;
+        if (coupon?._id && state.data?.data?.coupons) {
+          state.data.data.coupons = state.data.data.coupons.map(c =>
+            c._id === coupon._id ? coupon : c
           );
         }
       })
@@ -278,8 +280,6 @@ const couponsSlice = createSlice({
         state.loading = false;
         // Use deletedId from payload or fallback to meta.arg
         const deletedId = String(action.payload?.deletedId || action.meta.arg);
-        console.log("Delete fulfilled - Removing coupon ID:", deletedId);
-        console.log("Current coupons:", state.data?.data?.coupons?.map(c => c._id));
         
         if (state.data?.data?.coupons) {
           const beforeCount = state.data.data.coupons.length;
@@ -288,13 +288,11 @@ const couponsSlice = createSlice({
             // Ensure both IDs are strings for comparison
             const couponId = String(c._id);
             const shouldKeep = couponId !== deletedId;
-            if (!shouldKeep) {
-              console.log("Removing coupon:", c.code, couponId, "matches", deletedId);
+            if (!shouldKeep) { /* ignore */ 
             }
             return shouldKeep;
           });
           const afterCount = filteredCoupons.length;
-          console.log(`Coupons before: ${beforeCount}, after: ${afterCount}`);
           
           // Update state with new array reference
           if (state.data && state.data.data) {
@@ -310,12 +308,10 @@ const couponsSlice = createSlice({
                 state.data.data.pagination.total = state.pagination.total;
                 state.data.data.pagination.totalPages = state.pagination.totalPages;
               }
-            } else {
-              console.warn("No coupon was removed! ID mismatch or coupon not found.");
+            } else { /* ignore */ 
             }
           }
-        } else {
-          console.warn("No coupons array found in state.data.data");
+        } else { /* ignore */ 
         }
       })
       .addCase(deleteCoupon.rejected, (state, action) => { 

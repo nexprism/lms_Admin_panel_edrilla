@@ -89,6 +89,17 @@ const CreateCoupon: React.FC = () => {
     }
     delete payload.courseId; // Remove courseId from payload as backend expects applicableCourses
 
+    // The backend compares `now > coupon.endDate` / `now < coupon.startDate` as exact
+    // instants (lms_backend validateCoupon), so a bare "YYYY-MM-DD" endDate is cast to
+    // midnight UTC and the coupon expires on the morning of its advertised last day.
+    // Send the full span of the selected days in the admin's local timezone instead.
+    if (formData.startDate) {
+      payload.startDate = new Date(`${formData.startDate}T00:00:00.000`).toISOString();
+    }
+    if (formData.endDate) {
+      payload.endDate = new Date(`${formData.endDate}T23:59:59.999`).toISOString();
+    }
+
     try {
       await dispatch(createCoupon(payload)).unwrap();
       setPopup({

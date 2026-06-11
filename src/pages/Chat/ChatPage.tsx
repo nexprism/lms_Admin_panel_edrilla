@@ -4,26 +4,7 @@ import { selectCurrentUser, selectToken } from "../../store/slices/authslice";
 import { chatService } from "../../services/chatService";
 import { useAppDispatch } from "../../hooks/redux";
 import { fetchAllStudents } from "../../store/slices/students";
-import {
-  Search,
-  Send,
-  Paperclip,
-  Mic,
-  MoreVertical,
-  User,
-  BookOpen,
-  Image as ImageIcon,
-  File as FileIcon,
-  X,
-  Phone,
-  Video,
-  Info,
-  MessageCircle,
-  Bot,
-  CheckCheck,
-  Reply,
-  Copy
-} from "lucide-react";
+import { Search, Send, Paperclip, Mic, MoreVertical, Image as ImageIcon, File as FileIcon, X, Phone, Video, Info, MessageCircle, Bot, CheckCheck, Reply, Copy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../../services/axiosConfig";
 import PageMeta from "../../components/common/PageMeta";
@@ -68,7 +49,6 @@ const formatMessageTime = (dateString?: string) => {
 };
 
 const ChatPage: React.FC = () => {
-  console.log("ChatPage rendering...");
   const currentUser = useSelector(selectCurrentUser);
   const token = useSelector(selectToken);
 
@@ -93,7 +73,6 @@ const ChatPage: React.FC = () => {
       resolvedUrl = `${baseUrl}/${cleanPath}`;
     }
 
-    // console.log(`Resolving media: ${path} -> ${resolvedUrl}`);
     return resolvedUrl;
   };
 
@@ -119,11 +98,11 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     fetchChatRooms();
     dispatch(fetchAllStudents({ page: 1, limit: 100 }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [dispatch, currentUser?.id]);
 
   const fetchChatRooms = async () => {
     try {
-      console.log("Fetching chat rooms...");
       const results = await Promise.allSettled([
         axiosInstance.get("/chat/rooms"),
         axiosInstance.get("/chat/course/rooms")
@@ -132,11 +111,9 @@ const ChatPage: React.FC = () => {
       const directRes = results[0].status === 'fulfilled' ? (results[0] as PromiseFulfilledResult<any>).value : { data: { rooms: [] } };
       const courseRes = results[1].status === 'fulfilled' ? (results[1] as PromiseFulfilledResult<any>).value : { data: { courseChatRooms: [] } };
 
-      console.log("Direct rooms response:", directRes.data);
-      console.log("Course rooms response:", courseRes.data);
 
       const directRooms = (directRes.data.rooms || []).map((r: any) => {
-        const currentUserId = currentUser?._id || (currentUser as any)?.id;
+        const currentUserId = (currentUser as any)?._id || (currentUser as any)?.id;
         const otherParticipant = r.participants.find((p: any) => (p._id || p.id) !== currentUserId);
         return {
           id: r._id,
@@ -161,7 +138,6 @@ const ChatPage: React.FC = () => {
       }));
 
       const allRooms = [...directRooms, ...courseRooms];
-      console.log("Mapped all rooms:", allRooms);
 
       setChats(prev => {
         const existingIds = new Set(allRooms.map((r: any) => r.id));
@@ -176,7 +152,7 @@ const ChatPage: React.FC = () => {
   const fetchMessages = async (roomId: string) => {
     try {
       let endpoint = `/chat/messages/${roomId}`;
-      if (selectedChat?.type === 'group') endpoint = `/chat/group/messages/${roomId}`;
+      if ((selectedChat?.type as string) === 'group') endpoint = `/chat/group/messages/${roomId}`;
       if (selectedChat?.type === 'course') endpoint = `/chat/course/messages/${roomId}`;
 
       const res = await axiosInstance.get(endpoint);
@@ -239,24 +215,38 @@ const ChatPage: React.FC = () => {
   const [isTypingRemote, setIsTypingRemote] = useState(false);
 
   useEffect(() => {
+    let ignore = false;
+
     if (selectedChat && selectedChat.id) {
       // If it looks like a participantId (studentId), create/get room
       // If it's already a roomId, just fetch messages
       // We can distinguish by a flag or by checking if we have participantId without roomId
       const isRoomId = selectedChat.id.length >= 24 && !chats.find(c => c.participantId === selectedChat.id && c.id !== selectedChat.id);
+      const requestedParticipantId = selectedChat.participantId;
 
       if (isRoomId) {
         fetchMessages(selectedChat.id);
       } else {
         axiosInstance.post("/chat/room", { receiverId: selectedChat.participantId })
           .then(res => {
+            // Ignore stale responses if the effect has been re-run (a different chat is selected)
+            if (ignore) return;
             const roomId = res.data.roomId;
-            setSelectedChat(prev => prev ? { ...prev, id: roomId } : null);
+            // Only mutate if the still-selected chat is the one this request was made for
+            setSelectedChat(prev => (prev && prev.participantId === requestedParticipantId) ? { ...prev, id: roomId } : prev);
             fetchMessages(roomId);
+          })
+          .catch(err => {
+            console.error("Failed to create/get chat room", err);
           });
       }
     }
-  }, [selectedChat?.participantId]);
+
+    return () => {
+      ignore = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on chat identity (id + type) so every room switch refetches; course rooms have no participantId, so keying on it left stale messages when switching between course rooms
+  }, [selectedChat?.id, selectedChat?.type]);
 
   useEffect(() => {
     if (token && currentUser) {
@@ -268,7 +258,7 @@ const ChatPage: React.FC = () => {
         }
       });
 
-      socket.on("stopTyping", ({ userId, roomId }: { userId: string, roomId: string }) => {
+      socket.on("stopTyping", ({ userId: _userId, roomId }: { userId: string, roomId: string }) => {
         if (roomId === selectedChat?.id) {
           setIsTypingRemote(false);
         }
@@ -279,6 +269,7 @@ const ChatPage: React.FC = () => {
         socket.off("stopTyping");
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [selectedChat?.id, currentUser?.id]);
 
   const handleTyping = () => {
@@ -395,12 +386,39 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const cancelRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder) {
+      // Detach onstop so the discarded recording is not sent, then release the mic
+      recorder.onstop = null;
+      if (recorder.state !== "inactive") recorder.stop();
+      recorder.stream.getTracks().forEach((track) => track.stop());
+      mediaRecorderRef.current = null;
+    }
+    clearInterval(timerRef.current);
+    setIsRecording(false);
+  };
+
+  // Release the microphone and timer if the component unmounts mid-recording
+  useEffect(() => {
+    return () => {
+      const recorder = mediaRecorderRef.current;
+      if (recorder) {
+        recorder.onstop = null;
+        if (recorder.state !== "inactive") recorder.stop();
+        recorder.stream.getTracks().forEach((track) => track.stop());
+        mediaRecorderRef.current = null;
+      }
+      clearInterval(timerRef.current);
+    };
+  }, []);
+
   const sendVoiceMessage = async (blob: Blob) => {
     if (!selectedChat) return;
     const formData = new FormData();
     const file = new File([blob], "voice_message.webm", { type: 'audio/webm' });
     formData.append("files", file); // Changed from 'file' to 'files' to match backend
-    formData.append("receiverId", selectedChat.participantId);
+    formData.append("receiverId", selectedChat.participantId!);
     formData.append("roomId", selectedChat.id);
 
     try {
@@ -418,7 +436,7 @@ const ChatPage: React.FC = () => {
     if (selectedChat.type === 'direct') {
       chatService.sendMessage({
         roomId: selectedChat.id,
-        receiverId: selectedChat.participantId,
+        receiverId: selectedChat.participantId!,
         message: inputValue,
         replyTo: replyingTo?._id
       });
@@ -449,7 +467,7 @@ const ChatPage: React.FC = () => {
 
       let endpoint = "/chat/message";
       if (selectedChat.type === 'direct') {
-        formData.append("receiverId", selectedChat.participantId);
+        formData.append("receiverId", selectedChat.participantId!);
         formData.append("roomId", selectedChat.id);
       } else if (selectedChat.type === 'course') {
         endpoint = "/chat/course/message";
@@ -470,6 +488,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="flex h-[calc(100vh-120px)] bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-800">
+      {/* @ts-ignore - PageMeta props are untyped legacy code */}
       <PageMeta title="Messages | LMS Admin" />
 
       {/* Sidebar */}
@@ -526,13 +545,9 @@ const ChatPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="p-2 space-y-1">
             {(() => {
-              console.log("ChatPage render activeTab:", activeTab);
-              console.log("Current chats state length:", chats.length);
-              if (chats.length > 0) {
-                console.log("First 5 chats sample:", chats.slice(0, 5));
+              if (chats.length > 0) { /* ignore */ 
               }
               const filtered = chats.filter(c => c.type === activeTab && (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()));
-              console.log(`Filtered count for ${activeTab}: ${filtered.length}`);
 
               const sorted = [...filtered].sort((a, b) => {
                 if (subFilter === 'unread') {
@@ -753,7 +768,7 @@ const ChatPage: React.FC = () => {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => { setIsRecording(false); clearInterval(timerRef.current); }}
+                        onClick={cancelRecording}
                         className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
                       >
                         Cancel

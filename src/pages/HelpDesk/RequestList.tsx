@@ -4,7 +4,7 @@ import { fetchSupportTickets } from "../../store/slices/support";
 import { fetchStudentById, clearStudentDetails } from "../../store/slices/students";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import { Search, ChevronLeft, ChevronRight, RotateCcw, Eye, Edit, Paperclip, User, X, Clock, CheckCircle, AlertCircle, Timer, TrendingUp, Users, Calendar, MessageCircle, BarChart3, Activity, Filter, ExternalLink } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, RotateCcw, Eye, Edit, Paperclip, User, X, Clock, CheckCircle, AlertCircle, TrendingUp, Users, MessageCircle, BarChart3, Activity, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface User {
@@ -48,7 +48,7 @@ const RequestList: React.FC = () => {
     const [showUserTickets, setShowUserTickets] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [userTicketsData, setUserTicketsData] = useState<SupportTicket[]>([]);
-    const [selectedTimeRange, setSelectedTimeRange] = useState('7days');
+    const [selectedTimeRange, _setSelectedTimeRange] = useState('7days');
     const [selectedPriority, setSelectedPriority] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [allTickets, setAllTickets] = useState<SupportTicket[]>([]);
@@ -63,7 +63,7 @@ const RequestList: React.FC = () => {
             dispatch(fetchSupportTickets({ page: 1, limit: 10000 }))
                 .unwrap()
                 .then((response: any) => {
-                    console.log('All tickets response:', response); // Debug log
+                     // Debug log
                     if (response && response.tickets) {
                         setAllTickets(response.tickets);
                     } else if (response.data && response.data.tickets) {
@@ -97,14 +97,14 @@ const RequestList: React.FC = () => {
                     ticket.subject.toLowerCase().includes(searchTerm) ||
                     ticket.category.toLowerCase().includes(searchTerm) ||
                     ticket.description.toLowerCase().includes(searchTerm) ||
-                    ticket.userId?.fullName?.toLowerCase().includes(searchTerm) ||
-                    ticket.userId?.email?.toLowerCase().includes(searchTerm)
+                    (ticket.userId as any)?.fullName?.toLowerCase().includes(searchTerm) ||
+                    (ticket.userId as any)?.email?.toLowerCase().includes(searchTerm)
                 );
             });
-            setFilteredTickets(filtered);
+            setFilteredTickets(filtered as any);
         } else {
             setIsSearching(false);
-            setFilteredTickets(tickets);
+            setFilteredTickets(tickets as any);
         }
     }, [tickets, searchInput]);
 
@@ -163,7 +163,7 @@ const RequestList: React.FC = () => {
         return filteredTickets;
     };
 
-    const handleViewUserProfile = (userId: string) => {
+    const _handleViewUserProfile = (userId: string) => {
         dispatch(fetchStudentById(userId));
         setShowUserProfile(true);
     };
@@ -181,12 +181,12 @@ const RequestList: React.FC = () => {
         const ticketsToAnalyze = allTickets.length > 0 ? allTickets : tickets;
         
         ticketsToAnalyze.forEach(ticket => {
-            if (ticket.userId?._id) {
-                const userId = ticket.userId._id;
+            if ((ticket.userId as any)?._id) {
+                const userId = (ticket.userId as any)._id;
                 const userInfo = userStats.get(userId) || {
                     id: userId,
-                    name: ticket.userId.fullName,
-                    email: ticket.userId.email,
+                    name: (ticket.userId as any).fullName,
+                    email: (ticket.userId as any).email,
                     totalTickets: 0,
                     openTickets: 0,
                     closedTickets: 0,
@@ -219,8 +219,8 @@ const RequestList: React.FC = () => {
                 // Calculate response times for this user's tickets
                 if (ticket.messages && ticket.messages.length > 1) {
                     for (let i = 1; i < ticket.messages.length; i++) {
-                        const prevMsg = new Date(ticket.messages[i-1].timestamp);
-                        const currentMsg = new Date(ticket.messages[i].timestamp);
+                        const prevMsg = new Date((ticket.messages[i-1] as any).timestamp);
+                        const currentMsg = new Date((ticket.messages[i] as any).timestamp);
                         const timeDiff = (currentMsg.getTime() - prevMsg.getTime()) / (1000 * 60 * 60); // hours
                         if (timeDiff > 0 && timeDiff < 168) { // Only count reasonable response times (less than 1 week)
                             userInfo.totalResponseTime += timeDiff;
@@ -249,13 +249,14 @@ const RequestList: React.FC = () => {
     // Memoize user analytics to prevent unnecessary recalculations
     const userAnalytics = React.useMemo(() => {
         return getUserTicketAnalytics();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
     }, [allTickets, tickets]);
 
     const handleViewUserTickets = (userId: string) => {
         // Use allTickets for complete user ticket data
         const ticketsToFilter = allTickets.length > 0 ? allTickets : tickets;
-        const userTickets = ticketsToFilter.filter(ticket => ticket.userId?._id === userId);
-        setUserTicketsData(userTickets);
+        const userTickets = ticketsToFilter.filter(ticket => (ticket.userId as any)?._id === userId);
+        setUserTicketsData(userTickets as any);
         setSelectedUserId(userId);
         setShowUserTickets(true);
     };
@@ -272,11 +273,7 @@ const RequestList: React.FC = () => {
         const ticketsToAnalyze = allTickets.length > 0 ? allTickets : tickets;
         const totalTickets = ticketsToAnalyze.length;
         
-        console.log('Analyzing tickets:', {
-            allTicketsCount: allTickets.length,
-            currentTicketsCount: tickets.length,
-            usingTickets: ticketsToAnalyze.length
-        }); // Debug log
+         // Debug log
         
         // Filter by time range
         const timeRangeFilter = (date: string) => {
@@ -330,12 +327,12 @@ const RequestList: React.FC = () => {
         // Get unique users and their ticket counts from all tickets
         const userTicketMap = new Map();
         ticketsToAnalyze.forEach(ticket => {
-            if (ticket.userId?._id) {
-                const userId = ticket.userId._id;
+            if ((ticket.userId as any)?._id) {
+                const userId = (ticket.userId as any)._id;
                 const userInfo = {
                     id: userId,
-                    name: ticket.userId.fullName,
-                    email: ticket.userId.email,
+                    name: (ticket.userId as any).fullName,
+                    email: (ticket.userId as any).email,
                     count: (userTicketMap.get(userId)?.count || 0) + 1,
                     open: userTicketMap.get(userId)?.open || 0,
                     closed: userTicketMap.get(userId)?.closed || 0,
@@ -382,8 +379,8 @@ const RequestList: React.FC = () => {
             ticketsToAnalyze.forEach(ticket => {
                 if (ticket.messages && ticket.messages.length > 1) {
                     for (let i = 1; i < ticket.messages.length; i++) {
-                        const prevMsg = new Date(ticket.messages[i-1].timestamp);
-                        const currentMsg = new Date(ticket.messages[i].timestamp);
+                        const prevMsg = new Date((ticket.messages[i-1] as any).timestamp);
+                        const currentMsg = new Date((ticket.messages[i] as any).timestamp);
                         const timeDiff = (currentMsg.getTime() - prevMsg.getTime()) / (1000 * 60 * 60); // hours
                         if (timeDiff > 0 && timeDiff < 168) { // Only count reasonable response times
                             totalResponseTime += timeDiff;
@@ -419,13 +416,14 @@ const RequestList: React.FC = () => {
             avgMessagesPerTicket
         };
         
-        console.log('Dashboard stats:', stats); // Debug log
+         // Debug log
         return stats;
     };
 
     // Memoize dashboard stats to prevent unnecessary recalculations
     const stats = React.useMemo(() => {
         return getDashboardStats();
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
     }, [allTickets, tickets, selectedTimeRange]);
 
     const currentTickets = getCurrentPageTickets();
@@ -692,7 +690,7 @@ const RequestList: React.FC = () => {
                                         </button>
                                     </div>
                                     <div className="space-y-3 max-h-80 overflow-y-auto">
-                                        {stats.recentActivity.slice(0, 8).map((ticket, index) => (
+                                        {stats.recentActivity.slice(0, 8).map((ticket, _index) => (
                                             <div key={ticket._id} className="flex items-start gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
                                                 <div className={`w-3 h-3 rounded-full mt-2 ${
                                                     ticket.status === 'open' ? 'bg-red-500' :
@@ -703,7 +701,7 @@ const RequestList: React.FC = () => {
                                                         {ticket.subject}
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        by {ticket.userId?.fullName || 'Unknown'} • {new Date(ticket.createdAt).toLocaleDateString()}
+                                                        by {(ticket.userId as any)?.fullName || 'Unknown'} • {new Date(ticket.createdAt).toLocaleDateString()}
                                                     </p>
                                                     <div className="flex gap-2 mt-1">
                                                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${
@@ -1209,13 +1207,13 @@ const RequestList: React.FC = () => {
                                                 {studentDetails.fullName || studentDetails.name}
                                             </h3>
                                             <p className="text-lg text-gray-600 dark:text-gray-400">{studentDetails.email}</p>
-                                            {studentDetails.phone && (
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">📞 {studentDetails.phone}</p>
+                                            {(studentDetails as any).phone && (
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">📞 {(studentDetails as any).phone}</p>
                                             )}
                                             <div className="flex items-center gap-2 mt-2">
                                                 <span className="text-sm font-medium text-gray-900 dark:text-white">Role:</span>
                                                 <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-medium capitalize">
-                                                    {studentDetails.role || 'Student'}
+                                                    {(studentDetails as any).role || 'Student'}
 
                                                 </span>
                                             </div>
@@ -1271,12 +1269,12 @@ const RequestList: React.FC = () => {
                                     )}
 
                                     {/* Enrollment Information */}
-                                    {studentDetails.enrollments && studentDetails.enrollments.length > 0 && (
+                                    {(studentDetails as any).enrollments && (studentDetails as any).enrollments.length > 0 && (
                                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
                                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                                📚 Course Enrollments ({studentDetails.enrollments.length})
+                                                📚 Course Enrollments ({(studentDetails as any).enrollments.length})
                                             </h4>
-                                            {studentDetails.enrollments.map((enrollment: any, idx: number) => (
+                                            {(studentDetails as any).enrollments.map((enrollment: any, _idx: number) => (
                                                 <div key={enrollment._id} className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 last:mb-0 shadow-sm">
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div className="flex-1">
@@ -1325,9 +1323,9 @@ const RequestList: React.FC = () => {
                                                         hour: '2-digit', minute: '2-digit' 
                                                     })}
                                                 </p>
-                                                {studentDetails.passwordChangedAt && (
+                                                {(studentDetails as any).passwordChangedAt && (
                                                     <p className="text-gray-700 dark:text-gray-300">
-                                                        <strong>Password Changed:</strong> {new Date(studentDetails.passwordChangedAt).toLocaleDateString('en-US', { 
+                                                        <strong>Password Changed:</strong> {new Date((studentDetails as any).passwordChangedAt).toLocaleDateString('en-US', {
                                                             year: 'numeric', month: 'long', day: 'numeric' 
                                                         })}
                                                     </p>

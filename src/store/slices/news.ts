@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/axiosConfig";
-import axios from "axios";
 
 export interface News {
   _id: string;
@@ -301,7 +300,7 @@ const newsSlice = createSlice({
             categories: Array.isArray(item.categories)
               ? item.categories
               : typeof item.categories === "string" && item.categories
-              ? item.categories.split(",").map((c: string) => c.trim()).filter((c: string) => c)
+              ? (item.categories as any).split(",").map((c: string) => c.trim()).filter((c: string) => c)
               : [],
           }));
           state.news = newsData;

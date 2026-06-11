@@ -9,7 +9,7 @@ interface CreateStudentPopupProps {
 }
 
 const CreateStudentPopup: React.FC<CreateStudentPopupProps> = ({ open, onClose }) => {
-  const dispatch = useAppDispatch<any>();
+  const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state: any) => state.students);
 
   const [form, setForm] = useState({
@@ -18,7 +18,7 @@ const CreateStudentPopup: React.FC<CreateStudentPopupProps> = ({ open, onClose }
     password: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
+  const [_submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error" | ""; text: string }>({ type: "", text: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,6 @@ const CreateStudentPopup: React.FC<CreateStudentPopupProps> = ({ open, onClose }
     try {
       const result = await dispatch(createStudent(form));
       // Handle undefined/null result or payload
-      console.log("Create Student Result:", result);
       if (result?.meta?.requestStatus === "fulfilled") {
         setMessage({ type: "success", text: "Student created successfully!" });
         setForm({ fullName: "", email: "", password: "" });
@@ -44,7 +43,7 @@ const CreateStudentPopup: React.FC<CreateStudentPopupProps> = ({ open, onClose }
         }, 2000);
 
       } else {
-        let errMsg = error || result?.payload || "Failed to create student.";
+        const errMsg = error || result?.payload || "Failed to create student.";
         setMessage({ type: "error", text: typeof errMsg === "string" ? errMsg : "Failed to create student." });
         setTimeout(() => setMessage({ type: "", text: "" }), 3000);
       }

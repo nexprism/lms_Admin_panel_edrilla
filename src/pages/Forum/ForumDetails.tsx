@@ -2,19 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchForumThreadById, fetchThreadReplies, deleteForumThread, deleteForumReply, updateForumReply } from "../../store/slices/forumSlice";
-import {
-  User,
-  Calendar,
-  MessageCircle,
-  CheckCircle,
-  XCircle,
-  Heart,
-  Tag,
-  Paperclip,
-  Loader2,
-  Trash2,
-  Pencil,
-} from "lucide-react";
+import { User, Calendar, MessageCircle, XCircle, Heart, Paperclip, Loader2, Trash2, Pencil } from "lucide-react";
 import { RootState } from "../../store";
 
 const BASE_URL = import.meta.env.VITE_IMAGE_URL || "https://api.edrilla.com";
@@ -23,7 +11,7 @@ const ForumDetails: React.FC = () => {
   const { threadId } = useParams<{ threadId: string }>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { threadReplies, repliesLoading, repliesError } = useSelector(
+  const { threadReplies, repliesLoading, repliesError: _repliesError } = useSelector(
     (state: RootState) => state.forum
   );
 

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 import type {
   User,
@@ -35,6 +35,9 @@ export const login = createAsyncThunk<
       {
         email: credentials.email,
         password: credentials.password,
+        // The backend requires a deviceId for non-web platforms; the admin panel
+        // is a web app, so identify as such (same as the student frontend does).
+        platform: "web",
       },
       {
         headers: {
@@ -45,14 +48,8 @@ export const login = createAsyncThunk<
 
     const data = response.data;
 
-    // Store tokens in localStorage
-    if (data.data?.accessToken) {
-      localStorage.setItem("token", data.data.accessToken);
-      localStorage.setItem("accessToken", data.data.accessToken);
-    }
-    if (data.data?.refreshToken) {
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-    }
+    // SECURITY: the JWT is delivered as an httpOnly cookie — do NOT store it in
+    // localStorage (XSS-readable). Only the non-sensitive user/role marker is kept.
     if (data.data?.user) {
       localStorage.setItem("user", JSON.stringify(data.data.user));
     }
@@ -73,14 +70,17 @@ export const signup = createAsyncThunk<
   { rejectValue: string }
 >("auth/signup", async (userData, { rejectWithValue }) => {
   try {
+    // SECURITY: do NOT send a privileged role from the client. Public signup creates
+    // a 'student' on the server regardless; admin/instructor accounts are provisioned
+    // only through the admin-gated user-management endpoint. (Previously this sent
+    // role:"admin", which combined with a public /signup allowed self-registration as
+    // an administrator.)
     const response = await axios.post<ApiResponse<AuthResponse>>(
       `${API_BASE_URL}/signup`,
       {
         email: userData.email,
         password: userData.password,
-
         fullName: userData.fullName,
-        role: "admin",
       },
       {
         headers: {
@@ -91,14 +91,8 @@ export const signup = createAsyncThunk<
 
     const data = response.data;
 
-    // Store tokens in localStorage
-    if (data.data?.accessToken) {
-      localStorage.setItem("token", data.data.accessToken);
-      localStorage.setItem("accessToken", data.data.accessToken);
-    }
-    if (data.data?.refreshToken) {
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-    }
+    // SECURITY: the JWT is delivered as an httpOnly cookie — do NOT store it in
+    // localStorage (XSS-readable). Only the non-sensitive user/role marker is kept.
     if (data.data?.user) {
       localStorage.setItem("user", JSON.stringify(data.data.user));
     }
@@ -115,26 +109,26 @@ export const signup = createAsyncThunk<
 
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/logout",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue: _rejectWithValue }) => {
     try {
-      const token =
-        localStorage.getItem("accessToken") || localStorage.getItem("token");
-
-      if (token) {
-        await fetch(`${API_BASE_URL}api/v1/logout`, {
+      // Always tell the server to clear the httpOnly auth cookie and blacklist the
+      // token. The cookie is sent via credentials; we no longer depend on a token
+      // in localStorage to decide whether to call logout.
+      try {
+        await fetch(`${API_BASE_URL.replace(/\/$/, "")}/logout`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           credentials: "include",
         });
+      } catch {
+        /* ignore network errors — still clear local state below */
       }
 
-      // Clear all tokens
+      // Clear any legacy local state
       localStorage.removeItem("token");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
+      localStorage.removeItem("is_auth");
 
       window.location.href = "/signin"; // Redirect to login page
     } catch (error) {
@@ -197,7 +191,6 @@ export const checkAuthStatus = createAsyncThunk<
             error.response.data?.message || "Token validation failed"
           );
         }
-        console.warn("Error parsing stored user data or network error:", error);
       }
     }
 
@@ -214,7 +207,7 @@ export const checkAuthStatus = createAsyncThunk<
       );
 
       const data = response.data;
-      return { user: data.data?.user!, token };
+      return { user: data.data?.user, token };
     } catch (error) {
       localStorage.removeItem("token");
       localStorage.removeItem("accessToken");
@@ -368,12 +361,9 @@ const authSlice = createSlice({
       state.refreshToken = refreshToken || null;
       state.isAuthenticated = true;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("accessToken", token);
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
+      // SECURITY: JWT stays in the httpOnly cookie; persist only the user marker.
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("is_auth", "1");
     },
     clearCredentials: (state) => {
       state.user = null;

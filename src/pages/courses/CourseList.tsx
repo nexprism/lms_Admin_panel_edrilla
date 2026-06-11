@@ -4,31 +4,7 @@ import { fetchCourses, fetchCourseEnrollments, deleteCourse } from "../../store/
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PopupAlert from "../../components/popUpAlert";
 import PageMeta from "../../components/common/PageMeta";
-import {
-  Pencil,
-  CheckCircle,
-  XCircle,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Users,
-  Eye,
-  Star,
-  Calendar,
-  DollarSign,
-  BookOpen,
-  TrendingUp,
-  Clock,
-  User,
-  Plus,
-  MoreHorizontal,
-  Edit3,
-  Trash2,
-  Award,
-} from "lucide-react";
-import { useDispatch } from "react-redux";
+import { CheckCircle, XCircle, Search, Filter, ChevronLeft, ChevronRight, RotateCcw, Users, Eye, Star, BookOpen, TrendingUp, Clock, User, Plus, MoreHorizontal, Edit3, Trash2, Award } from "lucide-react";
 import { deleteEnrollment } from "../../store/slices/students";
 
 interface Course {
@@ -80,10 +56,14 @@ const CourseList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
 
   // State for enrollments modal
-  const [enrollmentsModal, setEnrollmentsModal] = useState({ 
-    open: false, 
-    enrollments: [], 
-    courseTitle: "" 
+  const [enrollmentsModal, setEnrollmentsModal] = useState<{
+    open: boolean;
+    enrollments: any[];
+    courseTitle: string;
+  }>({
+    open: false,
+    enrollments: [],
+    courseTitle: ""
   });
   const [enrollmentsLoading, setEnrollmentsLoading] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string } | null>(null);
@@ -94,18 +74,28 @@ const CourseList: React.FC = () => {
   );
   const [testPopup, setTestPopup] = useState(false);
 
-  // Debounce search
+  // Map the status filter to the backend's isPublished flag (omit when "All")
+  const isPublished =
+    statusFilter === "published"
+      ? true
+      : statusFilter === "draft"
+      ? false
+      : undefined;
+
+  // Reset to the first page whenever the search term or status filter changes
+  // so we never request an out-of-range page for the new result set.
+  useEffect(() => {
+    setPage(1);
+  }, [searchInput, statusFilter]);
+
+  // Debounced, server-side fetch: search/status are forwarded to the backend
+  // (also covers the initial mount fetch).
   useEffect(() => {
     const timer = setTimeout(() => {
-      dispatch(fetchCourses({ page, limit }));
+      dispatch(fetchCourses({ page, limit, search: searchInput, isPublished }));
     }, 500);
     return () => clearTimeout(timer);
-  }, [dispatch, page, limit, searchInput, statusFilter]);
-
-  // Fetch on mount
-  useEffect(() => {
-    dispatch(fetchCourses({ page, limit }));
-  }, [dispatch, page, limit]);
+  }, [dispatch, page, limit, searchInput, isPublished]);
 
   // Extract courses from the correct data structure
   const courses: Course[] = Array.isArray(data?.courses) ? data.courses : [];
@@ -151,17 +141,6 @@ const CourseList: React.FC = () => {
     setPage(1);
     setLimit(10);
   };
-
-  const filteredCourses = courses?.filter((course) => {
-    const matchesSearch =
-      !searchInput ||
-      course.title.toLowerCase().includes(searchInput.toLowerCase());
-    const matchesStatus =
-      !statusFilter ||
-      (statusFilter === "published" && course.isPublished) ||
-      (statusFilter === "draft" && !course.isPublished);
-    return matchesSearch && matchesStatus;
-  });
 
   const generatePageNumbers = () => {
     const pages = [];
@@ -214,8 +193,6 @@ const CourseList: React.FC = () => {
 
   // debug: log deleteConfirm changes
   React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('deleteConfirm state changed', deleteConfirm);
   }, [deleteConfirm]);
 
   const StatusBadge = ({ isPublished }: { isPublished: boolean }) => (
@@ -238,7 +215,7 @@ const CourseList: React.FC = () => {
     </span>
   );
 
-  const CourseCard = ({ course, index }: { course: Course; index: number }) => (
+  const CourseCard = ({ course, index: _index }: { course: Course; index: number }) => (
     <div className="group bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300">
       <div className="relative">
         <img
@@ -323,15 +300,11 @@ const CourseList: React.FC = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 // debug: log click and id
-                // eslint-disable-next-line no-console
-                console.log('CourseCard delete clicked', course._id);
                 setDeleteConfirm({ id: course._id, title: course.title });
                 // fallback: if PopupAlert doesn't mount quickly, use native confirm
                 setTimeout(() => {
                   const dialog = document.querySelector('[role="dialog"]');
                   if (!dialog) {
-                    // eslint-disable-next-line no-console
-                    console.log('PopupAlert not mounted — falling back to window.confirm');
                     if (window.confirm(`Delete course "${course.title}"? This cannot be undone.`)) {
                       handleConfirmDeleteCourse(course._id);
                     } else {
@@ -509,10 +482,10 @@ const CourseList: React.FC = () => {
             {viewMode === 'grid' ? (
               /* Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredCourses.map((course, idx) => (
+                {courses.map((course, idx) => (
                   <CourseCard key={course._id} course={course} index={idx} />
                 ))}
-                {filteredCourses.length === 0 && (
+                {courses.length === 0 && (
                   <div className="col-span-full text-center py-16">
                     <BookOpen className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No courses found</h3>
@@ -556,7 +529,7 @@ const CourseList: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {filteredCourses.map((course, idx) => (
+                      {courses.map((course, idx) => (
                         <tr
                           key={course._id}
                           className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
@@ -598,7 +571,7 @@ const CourseList: React.FC = () => {
                           </td>
 
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {course.coursePosition}
+                            {(course as any).coursePosition}
                           </td>
                          
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -633,14 +606,10 @@ const CourseList: React.FC = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   // debug: log click and id
-                                  // eslint-disable-next-line no-console
-                                  console.log('Table delete clicked', course._id);
                                   setDeleteConfirm({ id: course._id, title: course.title });
                                   setTimeout(() => {
                                     const dialog = document.querySelector('[role="dialog"]');
                                     if (!dialog) {
-                                      // eslint-disable-next-line no-console
-                                      console.log('PopupAlert not mounted — falling back to window.confirm');
                                       if (window.confirm(`Delete course "${course.title}"? This cannot be undone.`)) {
                                         handleConfirmDeleteCourse(course._id);
                                       } else {
@@ -658,7 +627,7 @@ const CourseList: React.FC = () => {
                           </td>
                         </tr>
                       ))}
-                      {filteredCourses.length === 0 && (
+                      {courses.length === 0 && (
                         <tr>
                           <td colSpan={9} className="text-center py-16">
                             <BookOpen className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -674,7 +643,7 @@ const CourseList: React.FC = () => {
             )}
 
             {/* Pagination */}
-            {filteredCourses.length > 0 && (
+            {courses.length > 0 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}

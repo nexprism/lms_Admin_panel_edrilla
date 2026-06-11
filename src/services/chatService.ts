@@ -14,11 +14,9 @@ class ChatService {
     });
 
     this.socket.on("connect", () => {
-      console.log("Connected to Chat Socket");
     });
 
     this.socket.on("disconnect", () => {
-      console.log("Disconnected from Chat Socket");
     });
 
     return this.socket;

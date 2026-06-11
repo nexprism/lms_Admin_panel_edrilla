@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import axiosInstance from '../../services/axiosConfig';
 
 interface DashboardData {
@@ -103,7 +102,6 @@ export const fetchVideoSessions = createAsyncThunk(
                     'Content-Type': 'application/json',
                 },
             });
-            console.log('Video Sessions Response:', response.data);
             return response.data?.data || [];
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -114,7 +112,7 @@ export const fetchVideoSessions = createAsyncThunk(
 
 export const fetchProjectAnalytics = createAsyncThunk(
     'analytics/fetchProjectAnalytics',
-    async (_, { rejectWithValue, getState }) => {
+    async (_, { rejectWithValue, getState: _getState }) => {
         try {
             // Get token from somewhere (e.g., auth state or localStorage)
             const token = localStorage.getItem('accessToken');
@@ -124,7 +122,6 @@ export const fetchProjectAnalytics = createAsyncThunk(
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            console.log('Project Analytics Response:', response.data);
             return response.data?.data || {};
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.message || err.message);

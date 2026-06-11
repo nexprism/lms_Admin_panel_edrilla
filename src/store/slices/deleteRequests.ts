@@ -94,7 +94,7 @@ export const fetchDeleteRequests = createAsyncThunk(
       
       const url = `${API_BASE_URL}/delete-account/all${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       
-      console.log('Fetching delete requests from:', url); // Debug log
+       // Debug log
       
       const response = await axiosInstance.get(url, {
         headers: {

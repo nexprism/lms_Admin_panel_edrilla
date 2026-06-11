@@ -51,9 +51,7 @@ const JobList: React.FC = () => {
   const generatePageNumbers = () => {
     const pages = [];
     const totalPages = pagination.totalPages;
-    console.log("Total Pages:", totalPages);
     const current = pagination.page;
-    console.log("Current Page:", current);
     const maxPages = 5;
     const start = Math.max(1, current - Math.floor(maxPages / 2));
     const end = Math.min(totalPages, start + maxPages - 1);
@@ -100,7 +98,7 @@ const JobList: React.FC = () => {
   };
 
   // Helper to format budget with LPA logic
-  const formatBudget = (budget: { min: number; max: number; currency: string }, mode?: string) => {
+  const _formatBudget = (budget: { min: number; max: number; currency: string }, mode?: string) => {
     const { min, max, currency } = budget;
 
     if (mode === "full-time") {
@@ -295,7 +293,7 @@ const JobList: React.FC = () => {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => {
           setPopup({ isVisible: false, message: "", type: "" });
         }}

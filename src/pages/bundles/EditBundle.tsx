@@ -16,13 +16,13 @@ const MultiSelectDropdown = ({
   selectedCourses,
   onChange,
   loading,
-}) => {
+}: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<any>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
@@ -32,28 +32,28 @@ const MultiSelectDropdown = ({
   }, []);
 
   const filteredCourses =
-    courses?.courses?.filter((course) =>
+    courses?.courses?.filter((course: any) =>
       (course.title || course.name || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
     ) || [];
 
-  const handleCourseToggle = (courseId) => {
+  const handleCourseToggle = (courseId: any) => {
     const newSelection = selectedCourses.includes(courseId)
-      ? selectedCourses.filter((id) => id !== courseId)
+      ? selectedCourses.filter((id: any) => id !== courseId)
       : [...selectedCourses, courseId];
     onChange(newSelection);
   };
 
-  const removeCourse = (courseId) => {
-    onChange(selectedCourses.filter((id) => id !== courseId));
+  const removeCourse = (courseId: any) => {
+    onChange(selectedCourses.filter((id: any) => id !== courseId));
   };
 
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="mb-2">
         <div className="flex flex-wrap gap-2">
-          {selectedCourses.map((courseId) => {
+          {selectedCourses.map((courseId: any) => {
             const course = courses?.courses?.find(
               (c: any) => (c._id || c.id) === courseId
             );
@@ -117,7 +117,7 @@ const MultiSelectDropdown = ({
                 {searchTerm ? "No courses found" : "No courses available"}
               </div>
             ) : (
-              filteredCourses.map((course) => {
+              filteredCourses.map((course: any) => {
                 const courseId = course._id || course.id;
                 const courseName =
                   course.title || course.name || "Untitled Course";
@@ -211,9 +211,6 @@ const EditBundleForm = () => {
   const params = useParams();
   const id = params.id || params.bundleId; // Support both 'id' and 'bundleId' param names
 
-  console.log("All URL params:", params);
-  console.log("EditBundleForm ID:", id);
-  console.log("Current URL:", window.location.pathname);
 
   const {
     loading: bundleLoading,
@@ -224,8 +221,6 @@ const EditBundleForm = () => {
     (state: RootState) => state.course
   );
 
-  console.log("Courses data:", courses);
-  console.log("Bundle data:", bundleData);
 
   // Popup state
   const [popup, setPopup] = useState<{
@@ -272,24 +267,18 @@ const EditBundleForm = () => {
 
   // Fetch courses and bundle data
   useEffect(() => {
-    console.log("Fetching courses...");
     dispatch(fetchCourses({ page: 1, limit: 100 })); // Fetch more courses for dropdown
 
     if (id && id !== "undefined") {
-      console.log("Fetching bundle with ID:", id);
       dispatch(fetchCourseBundleById(id));
-    } else {
-      console.warn("No bundle ID provided or ID is undefined");
+    } else { /* ignore */ 
     }
   }, [dispatch, id]);
 
   // Populate form when bundle data is loaded
   useEffect(() => {
-    console.log("Bundle data updated:", bundleData);
-    console.log("Current bundle ID:", id);
 
     if (bundleData && id && id !== "undefined") {
-      console.log("Populating form with bundle data");
 
       setFormData({
         title: bundleData.title || "",
@@ -319,11 +308,10 @@ const EditBundleForm = () => {
       const courseIds =
         bundleData.courses?.map((c: any) => c._id || c.id) || [];
       setSelectedCourses(courseIds);
-      console.log("Selected courses set to:", courseIds);
     }
   }, [bundleData, id]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -331,7 +319,7 @@ const EditBundleForm = () => {
     }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: any) => {
     const { name, files: fileList } = e.target;
     setFiles((prev) => ({
       ...prev,
@@ -377,7 +365,7 @@ const EditBundleForm = () => {
           bundleFormData.append("tags", tag);
         });
       } else {
-        bundleFormData.append(key, formData[key]);
+        bundleFormData.append(key, (formData as any)[key]);
       }
     });
 
@@ -388,8 +376,8 @@ const EditBundleForm = () => {
 
     // Add files
     Object.keys(files).forEach((key) => {
-      if (files[key]) {
-        bundleFormData.append(key, files[key]);
+      if ((files as any)[key]) {
+        bundleFormData.append(key, (files as any)[key]);
       }
     });
 
@@ -629,7 +617,7 @@ const EditBundleForm = () => {
                           onChange={e => {
                             let value = e.target.value;
                             // Ensure number is between 0 and 100
-                            let numericValue = Number(value);
+                            const numericValue = Number(value);
                             if (isNaN(numericValue)) value = '0';
                             if (numericValue > 100) value = '100';
                             if (numericValue < 0) value = '0';

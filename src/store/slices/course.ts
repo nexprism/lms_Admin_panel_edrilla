@@ -4,22 +4,28 @@ import axiosInstance from "../../services/axiosConfig";
 interface CourseState {
   loading: boolean;
   error: string | null;
+  // `data` holds either the paginated list (from fetchCourses) or the single
+  // course (from fetchCourseById). Attachments and enrollments now live in
+  // their own slots so they no longer clobber whatever `data` currently holds.
   data: any;
+  attachments: any[];
+  enrollments: any[];
 }
 
 const initialState: CourseState = {
   loading: false,
   error: null,
   data: null,
+  attachments: [],
+  enrollments: [],
 };
 
 export const createCourse = createAsyncThunk(
   "course/createCourse",
   async (formData: FormData, { rejectWithValue }) => {
     try {
-      // Ensure the formData is properly formatted
-
-      formData.append("instructerId", "684088dfef718469d2bbcb62");
+      // The real instructorId is supplied by the AddCourse form state (or the
+      // backend falls back to req.user._id when empty). Do not overwrite it.
       const response = await axiosInstance.post("/courses/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -42,14 +48,21 @@ interface PaginationData {
 
 export const fetchCourses = createAsyncThunk<
   PaginationData,
-  { page?: number; limit?: number } | undefined
+  { page?: number; limit?: number; search?: string; isPublished?: boolean } | undefined
 >(
   "course/fetchCourses",
-  async (params = {}, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue: _rejectWithValue }) => {
     try {
-      const { page = 1, limit = 10 } = params;
+      const { page = 1, limit = 10, search, isPublished } = params;
+      const requestParams: Record<string, unknown> = { page, limit };
+      if (search && search.trim() !== "") {
+        requestParams.search = search.trim();
+      }
+      if (typeof isPublished === "boolean") {
+        requestParams.isPublished = isPublished;
+      }
       const response = await axiosInstance.get("/courses/", {
-        params: { page, limit },
+        params: requestParams,
         headers: {
           "Content-Type": "application/json",
         },
@@ -79,7 +92,7 @@ export const fetchCourses = createAsyncThunk<
 export const fetchCourseById = createAsyncThunk(
   "course/fetchCourseById",
   async (
-    { courseId, token }: { courseId: string; token: string },
+    { courseId, token: _token }: { courseId: string; token: string },
     { rejectWithValue }
   ) => {
     try {
@@ -103,10 +116,10 @@ export const updateCourse = createAsyncThunk(
   "course/updateCourse",
   async ({ id, data }: { id: string; data: FormData }, { rejectWithValue }) => {
     try {
-      // Remove any existing 'instructorId' entries before appending the correct one
-      data.delete("instructorId");
-      data.append("instructorId", "68b69334dffbe2b24ed4f059");
-
+      // The real instructorId is supplied by the EditCourse form state
+      // (populated from course.instructorId || course.instructor?._id). Do not
+      // overwrite it with a hardcoded id, which would silently reassign course
+      // ownership on every edit.
       const response = await axiosInstance.put(`/courses/${id}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -171,7 +184,7 @@ export const deleteCourse = createAsyncThunk(
   async ({ id }: { id: string }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token") || "";
-      const response = await axiosInstance.delete(`/courses/${id}`, {
+      const _response = await axiosInstance.delete(`/courses/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -244,12 +257,9 @@ const courseSlice = createSlice({
       })
       .addCase(fetchCourseAttachments.fulfilled, (state, action) => {
         state.loading = false;
-        // Assuming you want to store attachments in the data field
-        if (state.data) {
-          state.data.attachments = action.payload;
-        } else {
-          state.data = { attachments: action.payload };
-        }
+        // Store attachments in their own slot so they don't mutate/clobber the
+        // shared `data` field (which may hold the cached course list).
+        state.attachments = action.payload;
       })
       .addCase(fetchCourseAttachments.rejected, (state, action) => {
         state.loading = false;
@@ -261,12 +271,9 @@ const courseSlice = createSlice({
       })
       .addCase(fetchCourseEnrollments.fulfilled, (state, action) => {
         state.loading = false;
-        // Assuming you want to store enrollments in the data field
-        if (state.data) {
-          state.data.enrollments = action.payload;
-        } else {
-          state.data = { enrollments: action.payload };
-        }
+        // Store enrollments in their own slot so they don't mutate/clobber the
+        // shared `data` field (which may hold the cached course list).
+        state.enrollments = action.payload;
       })
       .addCase(fetchCourseEnrollments.rejected, (state, action) => {
         state.loading = false;

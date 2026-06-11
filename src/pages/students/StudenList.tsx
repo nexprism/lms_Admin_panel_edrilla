@@ -9,29 +9,12 @@ import {
   unbanStudent,
   logoutAllSessions,
 } from "../../store/slices/students";
-import {
-  Pencil,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  X,
-  AlertTriangle,
-  Eye,
-  Award,
-  Ban,
-  ShieldCheck,
-  LogOut,
-} from "lucide-react";
+import { Trash2, CheckCircle, XCircle, Search, ChevronLeft, ChevronRight, RotateCcw, X, AlertTriangle, Award, Ban, ShieldCheck, LogOut } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PopupAlert from "../../components/popUpAlert";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import EnrollStudentPopup from "../../components/students/EnrollStudentPopup";
 import CreateStudentPopup from "../../components/students/CreateStudentPopup";
 import BulkUploadPopup from "../../components/students/BulkUploadPopup";
@@ -143,10 +126,6 @@ const StudentList: React.FC = () => {
     useAppSelector((state) => state.students);
 
   // Add this after the useAppSelector line
-  console.log("Pagination state:", pagination);
-  console.log("Total pages:", pagination.totalPages);
-  console.log("Current page:", pagination.page);
-  console.log("Total items:", pagination.total);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
@@ -195,7 +174,7 @@ const StudentList: React.FC = () => {
     // Set isActive based on status filter
     if (localFilters.status === "active") {
       activeFilters.isActive = true;
-
+    } else if (localFilters.status === "inactive") {
       activeFilters.isActive = false;
     }
 
@@ -224,9 +203,7 @@ const StudentList: React.FC = () => {
           filters: {
             ...(localFilters.status ? { status: localFilters.status } : {}),
           },
-          searchFields: searchQuery
-            ? { name: searchQuery, email: searchQuery }
-            : {},
+          searchFields: searchQuery ? { search: searchQuery } : {},
           sort: { createdAt: "desc" },
         })
       );
@@ -242,15 +219,13 @@ const StudentList: React.FC = () => {
           isDeleted: false,
           ...(localFilters.status ? { status: localFilters.status } : {}),
         },
-        searchFields: searchQuery
-          ? { name: searchQuery, email: searchQuery }
-          : {},
+        searchFields: searchQuery ? { search: searchQuery } : {},
         sort: { createdAt: "desc" },
       })
     );
   };
 
-  const handleFilterChange = (key: string, value: string) => {
+  const _handleFilterChange = (key: string, value: string) => {
     const updated = { ...localFilters, [key]: value };
     setLocalFilters(updated);
     dispatch(setFilters(updated));
@@ -262,7 +237,7 @@ const StudentList: React.FC = () => {
     dispatch(resetFilters());
   };
 
-  const openDeleteModal = (student: Student) => {
+  const _openDeleteModal = (student: Student) => {
     setStudentToDelete(student);
     setDeleteModalOpen(true);
   };
@@ -302,9 +277,7 @@ const StudentList: React.FC = () => {
             page: pagination.page,
             limit: pagination.limit,
             filters: activeFilters,
-            searchFields: searchQuery
-              ? { name: searchQuery, email: searchQuery }
-              : {},
+            searchFields: searchQuery ? { search: searchQuery } : {},
             sort: { createdAt: "desc" },
           })
         );
@@ -353,7 +326,6 @@ const StudentList: React.FC = () => {
         isVisible: true,
       });
       closeBanModal();
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       setPopup({
         message: "Failed to ban student. Please try again.",
@@ -374,7 +346,6 @@ const StudentList: React.FC = () => {
         type: "success",
         isVisible: true,
       });
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       setPopup({
         message: "Failed to unban student. Please try again.",
@@ -659,14 +630,14 @@ const StudentList: React.FC = () => {
                           : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {student.isBanned == true ? (
+                        {student.isBanned ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-red-100 text-red-700 font-medium">
                             Banned
                             {/* {student.banReason && (
                               <span className="ml-2 text-xs text-red-500">({student.banReason})</span>
                             )} */}
                           </span>
-                        ) : student.isShadowBanned == true ? (
+                        ) : student.isShadowBanned ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-yellow-100 text-yellow-700 font-medium">
                             Shadow Banned
                             {/* {student.banReason && (
@@ -708,8 +679,7 @@ const StudentList: React.FC = () => {
                           </button>
 
                           {/* Ban/Unban Button */}
-                          {student.isBanned == true ||
-                          student.isShadowBanned == true ? (
+                          {student.isBanned || student.isShadowBanned ? (
                             <button
                               className="text-yellow-600 hover:text-yellow-800 transition-colors p-1"
                               onClick={(e) => {

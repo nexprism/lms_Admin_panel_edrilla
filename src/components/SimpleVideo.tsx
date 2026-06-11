@@ -143,14 +143,12 @@ export default class SimpleVideo {
         }
 
         const data = await res.json();
-        console.log("Upload response:", data);
         
         if (data.success && data.data) {
           // Get video URL from response
           const videoUrl = data.data.url || data.data.path || "";
           
           if (!videoUrl) {
-            console.warn("Upload succeeded but no URL returned");
             this.wrapper!.innerHTML = "<p style='color: #dc2626; text-align: center;'>Upload failed: No URL returned</p>";
             return;
           }
@@ -164,28 +162,40 @@ export default class SimpleVideo {
           // Replace the entire data object
           this.data = newData;
           
-          console.log("Video URL saved:", this.data.url);
           
           // Clear wrapper and show preview
           this.wrapper!.innerHTML = "";
-          this.wrapper!.appendChild(this.input);
+          this.wrapper!.appendChild(this.input!);
           this.wrapper!.appendChild(urlInput);
           this._updateView();
         } else {
-          this.wrapper!.innerHTML = "<p style='color: #dc2626; text-align: center;'>Upload failed: " + (data.message || "Unknown error") + "</p>";
+          // Build error message via DOM APIs (textContent) so server-derived
+          // strings are never parsed as HTML.
+          this.wrapper!.innerHTML = "";
+          const failedP = document.createElement("p");
+          failedP.style.cssText = "color: #dc2626; text-align: center;";
+          failedP.textContent = "Upload failed: " + (data.message || "Unknown error");
+          this.wrapper!.appendChild(failedP);
           // Re-add inputs
-          this.wrapper!.appendChild(this.input);
+          this.wrapper!.appendChild(this.input!);
           this.wrapper!.appendChild(urlInput);
         }
       } catch (error) {
         console.error("Video upload error:", error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        this.wrapper!.innerHTML = `
-          <p style='color: #dc2626; text-align: center; margin-bottom: 8px;'>Upload error: ${errorMessage}</p>
-          <p style='color: #6b7280; text-align: center; font-size: 12px;'>You can also paste a video URL instead</p>
-        `;
+        // Build error message via DOM APIs (textContent) so server-derived
+        // strings are never parsed as HTML.
+        this.wrapper!.innerHTML = "";
+        const errorP = document.createElement("p");
+        errorP.style.cssText = "color: #dc2626; text-align: center; margin-bottom: 8px;";
+        errorP.textContent = `Upload error: ${errorMessage}`;
+        const hintP = document.createElement("p");
+        hintP.style.cssText = "color: #6b7280; text-align: center; font-size: 12px;";
+        hintP.textContent = "You can also paste a video URL instead";
+        this.wrapper!.appendChild(errorP);
+        this.wrapper!.appendChild(hintP);
         // Re-add inputs
-        this.wrapper!.appendChild(this.input);
+        this.wrapper!.appendChild(this.input!);
         this.wrapper!.appendChild(urlInput);
       }
     });
@@ -273,7 +283,6 @@ export default class SimpleVideo {
 
   save() {
     // Return saved data; ensure url returned is the normalized full URL so editor can embed it.
-    console.log("Saving video data:", this.data);
     return {
       url:
         typeof this.data.url === "string"

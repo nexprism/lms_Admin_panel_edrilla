@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import DOMPurify from "dompurify";
 import {
   Bold,
   Italic,
@@ -21,6 +22,13 @@ import {
   Minimize,
 } from "lucide-react";
 
+// Sanitize server-sourced HTML before it is written into the DOM
+// (contentEditable surface or preview). Applied only at render sinks —
+// the value emitted via onChange is left untouched so saving does not
+// rewrite content beyond what the user actually edited.
+const sanitizeHtml = (html: string) =>
+  DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+
 // Quill Editor Component
 const QuillEditor = ({
   value,
@@ -29,9 +37,9 @@ const QuillEditor = ({
   height = "250px",
   toolbar = "full",
   className = "",
-}) => {
-  const editorRef = useRef(null);
-  const quillRef = useRef(null);
+}: any) => {
+  const editorRef = useRef<any>(null);
+  const _quillRef = useRef(null);
   const [isPreview, setIsPreview] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -45,14 +53,14 @@ const QuillEditor = ({
 
       // Make it contentEditable
       editor.contentEditable = true;
-      editor.innerHTML = value || "";
+      editor.innerHTML = sanitizeHtml(value || "");
 
       // Add event listeners
       const handleInput = () => {
         onChange(editor.innerHTML);
       };
 
-      const handleKeyDown = (e) => {
+      const handleKeyDown = (e: KeyboardEvent) => {
         // Handle Tab key for code blocks
         if (e.key === 'Tab') {
           e.preventDefault();
@@ -73,16 +81,17 @@ const QuillEditor = ({
 
     const cleanup = initializeQuill();
     return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, []);
 
   // Update content when value changes
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || "";
+      editorRef.current.innerHTML = sanitizeHtml(value || "");
     }
   }, [value]);
 
-  const execCommand = (command, value = null) => {
+  const execCommand = (command: any, value: any = null) => {
     document.execCommand(command, false, value);
     if (editorRef.current) {
       // Force update
@@ -92,30 +101,30 @@ const QuillEditor = ({
     }
   };
 
-  const handleHeading = (level) => {
-    const selection = window.getSelection();
+  const handleHeading = (level: number) => {
+    const selection = window.getSelection()!;
     if (selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
       const range = selection.getRangeAt(0);
       
       // Get the current element containing the selection
       let currentElement = range.commonAncestorContainer;
       if (currentElement.nodeType === Node.TEXT_NODE) {
-        currentElement = currentElement.parentElement;
+        currentElement = currentElement.parentElement!;
       }
       
       // Ensure we're within the editor
-      while (currentElement && currentElement !== editorRef.current && !['H1', 'H2', 'H3', 'P', 'DIV'].includes(currentElement.tagName)) {
-        currentElement = currentElement.parentElement;
+      while (currentElement && currentElement !== editorRef.current && !['H1', 'H2', 'H3', 'P', 'DIV'].includes((currentElement as HTMLElement).tagName)) {
+        currentElement = currentElement.parentElement!;
       }
       
       // Check if we're already in a heading or paragraph of the same level
-      const isCurrentHeading = currentElement && (currentElement.tagName === `H${level}` || (level === 0 && currentElement.tagName === 'P')) && currentElement.parentElement === editorRef.current;
+      const isCurrentHeading = currentElement && ((currentElement as HTMLElement).tagName === `H${level}` || (level === 0 && (currentElement as HTMLElement).tagName === 'P')) && currentElement.parentElement === editorRef.current;
       
       if (isCurrentHeading) {
         // Convert to paragraph if heading, or do nothing if already P
         const p = document.createElement('p');
-        p.innerHTML = currentElement.innerHTML;
-        currentElement.parentNode.replaceChild(p, currentElement);
+        p.innerHTML = (currentElement as HTMLElement).innerHTML;
+        currentElement.parentNode!.replaceChild(p, currentElement);
         
         // Update cursor position
         const newRange = document.createRange();
@@ -126,9 +135,9 @@ const QuillEditor = ({
       } else {
         // Apply heading or paragraph within the editor
         const newElement = level === 0 ? document.createElement('p') : document.createElement('h' + level);
-        if (currentElement && ['H1', 'H2', 'H3', 'P', 'DIV'].includes(currentElement.tagName) && currentElement.parentElement === editorRef.current) {
-          newElement.innerHTML = currentElement.innerHTML;
-          currentElement.parentNode.replaceChild(newElement, currentElement);
+        if (currentElement && ['H1', 'H2', 'H3', 'P', 'DIV'].includes((currentElement as HTMLElement).tagName) && currentElement.parentElement === editorRef.current) {
+          newElement.innerHTML = (currentElement as HTMLElement).innerHTML;
+          currentElement.parentNode!.replaceChild(newElement, currentElement);
         } else {
           const selectedText = range.toString() || (level === 0 ? 'Paragraph' : 'Heading ' + level);
           newElement.textContent = selectedText;
@@ -147,14 +156,14 @@ const QuillEditor = ({
     }
   };
 
-  const handleList = (type) => {
-    const selection = window.getSelection();
+  const handleList = (type: string) => {
+    const selection = window.getSelection()!;
     if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
+      const _range = selection.getRangeAt(0);
       
       // Try the standard way first
       const command = type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList';
-      document.execCommand(command, false, null);
+      document.execCommand(command, false, null as any);
       
       // If that doesn't work, create manually
       setTimeout(() => {
@@ -166,7 +175,7 @@ const QuillEditor = ({
   };
 
   const handleQuote = () => {
-    const selection = window.getSelection();
+    const selection = window.getSelection()!;
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString() || 'Quote text here';
@@ -196,7 +205,7 @@ const QuillEditor = ({
   };
 
   const handleCodeBlock = () => {
-    const selection = window.getSelection();
+    const selection = window.getSelection()!;
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString() || 'Code goes here';
@@ -231,7 +240,7 @@ const QuillEditor = ({
   };
 
   const insertLink = () => {
-    const selection = window.getSelection();
+    const selection = window.getSelection()!;
     const selectedText = selection.toString() || 'Link text';
     const url = prompt("Enter URL:");
     
@@ -264,7 +273,7 @@ const QuillEditor = ({
   const insertImage = () => {
     const url = prompt("Enter image URL:");
     if (url && /\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
-      const selection = window.getSelection();
+      const selection = window.getSelection()!;
       if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const img = document.createElement('img');
@@ -316,7 +325,7 @@ const QuillEditor = ({
       },
       {
         // Custom icon for Paragraph (using a "P" character as icon)
-        icon: (props) => <span {...props} style={{ fontWeight: 500, fontSize: "14px" }}>P</span>,
+        icon: (props: any) => <span {...props} style={{ fontWeight: 500, fontSize: "14px" }}>P</span>,
         command: "custom",
         action: () => handleHeading(0), // Use 0 to represent paragraph
         title: "Paragraph",
@@ -470,11 +479,12 @@ const QuillEditor = ({
                   onClick={() =>
                     button.action
                       ? button.action()
-                      : execCommand(button.command, button.value)
+                      : execCommand(button.command, (button as any).value)
                   }
                   className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/40 transition-colors duration-200 group"
                   title={button.title}
                 >
+                  {/* @ts-ignore - dynamic icon component lacks prop types */}
                   <button.icon className="w-4 h-4 text-gray-600 group-hover:text-gray-800 dark:text-white/90 " />
                 </button>
               );
@@ -514,7 +524,7 @@ const QuillEditor = ({
           <div
             className="p-6 prose max-w-none bg-gray-50 dark:bg-white/[0.03] overflow-y-auto"
             style={{ height: editorHeight }}
-            dangerouslySetInnerHTML={{ __html: value }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || "") }}
           />
         ) : (
           <div

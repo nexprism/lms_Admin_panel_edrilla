@@ -2,20 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAllQueries, updateQuery } from "../../store/slices/query";
 import { RootState } from "../../store";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { 
-  Search, 
-  Filter, 
-  RotateCcw, 
-  ChevronLeft, 
-  ChevronRight,
-  Eye,
-  MessageCircle,
-  Calendar,
-  User,
-  Mail,
-  Phone,
-  Pencil,
-} from "lucide-react";
+import { Search, Filter, RotateCcw, ChevronLeft, ChevronRight, MessageCircle, Calendar, User, Mail, Phone, Pencil } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 
@@ -81,12 +68,12 @@ const QueryList: React.FC = () => {
   const paginatedQueries = filteredQueries.slice(startIndex, startIndex + itemsPerPage);
 
   // Get unique categories and statuses for filter options
-  const categories = React.useMemo(() => {
+  const _categories = React.useMemo(() => {
     if (!queries) return [];
     return [...new Set(queries.map(q => q.category))].filter(Boolean);
   }, [queries]);
 
-  const statuses = React.useMemo(() => {
+  const _statuses = React.useMemo(() => {
     if (!queries) return [];
     return [...new Set(queries.map(q => q.status))].filter(Boolean);
   }, [queries]);
@@ -372,7 +359,7 @@ const QueryList: React.FC = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           className="text-blue-500 hover:text-blue-700 transition-colors p-1"
-                          onClick={() => handleEditStatus(query)}
+                          onClick={() => handleEditStatus(query as any)}
                         >
                           <Pencil className="h-5 w-5" />
                         </button>

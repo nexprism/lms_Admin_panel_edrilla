@@ -23,6 +23,8 @@ interface JobPayload {
     };
     status?: boolean;
     thumbnail?: File;
+    _id?: string;
+    isAdminApproved?: boolean;
 }
 
 interface ProposalUser {
@@ -101,7 +103,7 @@ const initialState: JobState = {
 export const createJob = createAsyncThunk(
     'job/createJob',
     async (
-        { job, token }: { job: JobPayload; token: string },
+        { job, token: _token }: { job: JobPayload; token: string },
         { rejectWithValue }
     ) => {
         try {
@@ -150,7 +152,6 @@ export const createJob = createAsyncThunk(
                 }
             );
 
-            console.log("Create job response:", response.data);
             return response.data;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -193,7 +194,6 @@ export const fetchJobs = createAsyncThunk(
 
 
             const response = await axiosInstance.get(`/jobs?${params.toString()}`);
-            console.log("Fetched jobs response:", response.data);
 
             return {
                 jobs: response.data.data?.data || [],
@@ -211,11 +211,10 @@ export const fetchJobs = createAsyncThunk(
 export const updateJob = createAsyncThunk(
     'job/updateJob',
     async (
-        { jobId, jobData, token }: { jobId: string; jobData: Partial<JobPayload>; token: string },
+        { jobId, jobData, token: _token }: { jobId: string; jobData: Partial<JobPayload>; token: string },
         { rejectWithValue }
     ) => {
         try {
-            console.log('updateJob called with jobData:', jobData);
             const formData = new FormData();
 
             // Handle nested objects by flattening into separate fields
@@ -247,19 +246,14 @@ export const updateJob = createAsyncThunk(
             }
 
             // Handle file
-            console.log('jobData.thumbnail:', jobData.thumbnail);
             if (jobData.thumbnail && jobData.thumbnail instanceof File) {
-                console.log('appending thumbnail file:', jobData.thumbnail.fileName);
                 formData.append('thumbnail', jobData.thumbnail);
             }
 
             // Debug: Log FormData contents
-            console.log('FormData entries:');
-            for (const [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-                } else {
-                    console.log(`${key}: ${value}`);
+            for (const [_key, value] of formData.entries()) {
+                if (value instanceof File) { /* ignore */ 
+                } else { /* ignore */ 
                 }
             }
 

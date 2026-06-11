@@ -2,40 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProjectAnalytics } from '../../store/slices/anayltics';
 import { RootState } from '../../store';
-import { 
-  Users, 
-  BookOpen, 
-  TrendingUp, 
-  Award, 
-  Activity, 
-  Eye, 
-  Search, 
-  Filter, 
-  Calendar,
-  ShoppingCart,
-  UserCheck,
-  Target,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Loader,
-  RefreshCw,
-  ArrowUpRight,
-  ArrowDownRight,
-  Star,
-  Clock,
-  CheckCircle,
-  Package,
-  XCircle,
-  ChevronRight,
-  TrendingDown,
-  Mail,
-  User,
-  Settings
-} from 'lucide-react';
+import type { AppDispatch } from '../../store';
+import { Users, BookOpen, TrendingUp, Activity, Search, ShoppingCart, UserCheck, BarChart3, Loader, RefreshCw, ArrowUpRight, Clock, Package, XCircle, User } from 'lucide-react';
 
 const Project = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { projectAnalytics, loading, error } = useSelector(
     (state: RootState) => state.analytics
   );
@@ -52,7 +23,7 @@ const Project = () => {
   const analytics = useMemo(() => {
     if (!projectAnalytics) return null;
 
-    const { summary, topEntities, trends, revenueBreakdown } = projectAnalytics;
+    const { summary, topEntities: _topEntities, trends, revenueBreakdown: _revenueBreakdown } = projectAnalytics;
     
     // Calculate growth rates
     const enrollmentGrowth = trends?.enrollments ? 
@@ -82,12 +53,12 @@ const Project = () => {
   const filteredCourses = useMemo(() => {
     if (!projectAnalytics?.topEntities?.topCourses) return [];
     
-    return projectAnalytics.topEntities.topCourses.filter(course =>
+    return projectAnalytics.topEntities.topCourses.filter((course: any) =>
       course.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [projectAnalytics?.topEntities?.topCourses, searchTerm]);
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: any) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -95,7 +66,7 @@ const Project = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
@@ -323,7 +294,7 @@ const Project = () => {
                       Enrollment Trends
                     </h3>
                     <div className="space-y-3">
-                      {projectAnalytics?.trends?.enrollments?.slice(-7).map((item, index) => (
+                      {projectAnalytics?.trends?.enrollments?.slice(-7).map((item: any, index: number) => (
                         <div key={index} className="flex items-center justify-between py-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(item._id)}
@@ -351,7 +322,7 @@ const Project = () => {
                       Revenue Trends
                     </h3>
                     <div className="space-y-3">
-                      {projectAnalytics?.trends?.sales?.slice(-5).map((item, index) => (
+                      {projectAnalytics?.trends?.sales?.slice(-5).map((item: any, index: number) => (
                         <div key={index} className="flex justify-between items-center py-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(item._id)}
@@ -372,7 +343,7 @@ const Project = () => {
                     Recent Signups
                   </h3>
                   <div className="space-y-3">
-                    {projectAnalytics?.activityLogs?.recentSignups?.slice(0, 5).map((user, index) => (
+                    {projectAnalytics?.activityLogs?.recentSignups?.slice(0, 5).map((user: any, index: number) => (
                       <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600 last:border-0">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
@@ -418,7 +389,7 @@ const Project = () => {
 
                 <div className="grid grid-cols-1 gap-4">
                   {filteredCourses.length > 0 ? (
-                    filteredCourses.map((course, index) => (
+                    filteredCourses.map((course: any, index: number) => (
                       <div key={course._id} className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -466,7 +437,7 @@ const Project = () => {
                       Top Users
                     </h4>
                     <div className="space-y-3">
-                      {projectAnalytics?.topEntities?.topUsers?.slice(0, 5).map((user, index) => (
+                      {projectAnalytics?.topEntities?.topUsers?.slice(0, 5).map((user: any, _index: number) => (
                         <div key={user._id} className="flex items-center gap-3 py-2">
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                             {user.fullName.charAt(0).toUpperCase()}
@@ -493,7 +464,7 @@ const Project = () => {
                       Signup Trends
                     </h4>
                     <div className="space-y-3">
-                      {projectAnalytics?.trends?.signups?.slice(-7).map((item, index) => (
+                      {projectAnalytics?.trends?.signups?.slice(-7).map((item: any, index: number) => (
                         <div key={index} className="flex items-center justify-between py-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {formatDate(item._id)}
@@ -531,7 +502,7 @@ const Project = () => {
                       Top Revenue Courses
                     </h4>
                     <div className="space-y-4">
-                      {projectAnalytics?.topEntities?.topRevenueCourses?.map((course, index) => (
+                      {projectAnalytics?.topEntities?.topRevenueCourses?.map((course: any, index: number) => (
                         <div key={course._id} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600 last:border-0">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
@@ -560,7 +531,7 @@ const Project = () => {
                       Revenue Breakdown
                     </h4>
                     <div className="space-y-4">
-                      {projectAnalytics?.revenueBreakdown?.courseRevenue?.map((item, index) => (
+                      {projectAnalytics?.revenueBreakdown?.courseRevenue?.map((item: any, _index: number) => (
                         <div key={item._id} className="flex items-center justify-between py-2">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
@@ -594,7 +565,7 @@ const Project = () => {
                       Bundle Revenue
                     </h4>
                     <div className="space-y-4">
-                      {projectAnalytics.revenueBreakdown.bundleRevenue.map((item, index) => (
+                      {projectAnalytics.revenueBreakdown.bundleRevenue.map((item: any, _index: number) => (
                         <div key={item._id} className="flex items-center justify-between py-2">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">
@@ -636,7 +607,7 @@ const Project = () => {
                       Recent Orders
                     </h4>
                     <div className="space-y-4">
-                      {projectAnalytics?.activityLogs?.recentOrders?.slice(0, 5).map((order, index) => (
+                      {projectAnalytics?.activityLogs?.recentOrders?.slice(0, 5).map((order: any, _index: number) => (
                         <div key={order._id} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600 last:border-0">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -674,7 +645,7 @@ const Project = () => {
                   </h4>
                   <div className="space-y-4">
                     {projectAnalytics?.activityLogs?.recentEnrollments?.length > 0 ? (
-                      projectAnalytics.activityLogs.recentEnrollments.slice(0, 10).map((enroll, index) => (
+                      projectAnalytics.activityLogs.recentEnrollments.slice(0, 10).map((enroll: any, _index: number) => (
                         <div key={enroll._id} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600 last:border-0">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900 dark:text-white">

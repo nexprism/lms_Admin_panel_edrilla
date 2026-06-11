@@ -7,19 +7,7 @@ import {
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import toast from "react-hot-toast";
-import {
-  Plus,
-  Loader2,
-  Eye,
-  EyeOff,
-  FileText,
-  Calendar,
-  Globe,
-  Lock,
-  Unlock,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { Plus, Loader2, FileText, Globe, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface TextLesson {
@@ -51,7 +39,7 @@ interface TextLesson {
 
 const TextLessonPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { loading, error, data } = useAppSelector((state) => state.textLesson);
+  const { loading, error, data: _data } = useAppSelector((state) => state.textLesson);
 
   const [lessons, setLessons] = useState<TextLesson[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -109,7 +97,7 @@ const TextLessonPage: React.FC = () => {
     }
   };
 
-  const toggleContentExpansion = (lessonId: string) => {
+  const _toggleContentExpansion = (lessonId: string) => {
     setExpandedContent(expandedContent === lessonId ? null : lessonId);
   };
 

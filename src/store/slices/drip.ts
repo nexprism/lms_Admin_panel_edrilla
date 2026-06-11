@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 interface DripRulePayload {
@@ -58,7 +57,7 @@ export const fetchDripRules = createAsyncThunk(
 
 export const updateDripRuleByReferenceId = createAsyncThunk(
   "drip/updateDripRuleByReferenceId",
-  async (updateData, { rejectWithValue }) => {
+  async (updateData: any, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put(
         `/drip/drip-rules/by-target/${updateData.targetId}`,
@@ -104,7 +103,6 @@ export const fetchCourseContents = createAsyncThunk(
           "Content-Type": "application/json",
         },
       });
-      console?.log("Fetched course contents:", response.data);
       return response.data?.data || response.data; // Adjust based on your API response structure
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -175,7 +173,7 @@ const dripSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateDripRuleByReferenceId.fulfilled, (state, action) => {
+      .addCase(updateDripRuleByReferenceId.fulfilled, (state, _action) => {
         state.loading = false;
         // Optionally update the state with the updated rule
         // const updatedRule = action.payload;

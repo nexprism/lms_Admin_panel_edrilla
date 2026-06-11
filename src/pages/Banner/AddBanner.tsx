@@ -7,7 +7,6 @@ import { fetchEvents } from "../../store/slices/event";
 import { fetchJobs } from "../../store/slices/job";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import axiosInstance from "../../services/axiosConfig";
 
 const typeOptions = [
   { value: "course", label: "Course" },
@@ -117,7 +116,7 @@ const AddBanner: React.FC = () => {
     formData.append("isActive", String(isActive));
     if (startDate) formData.append("startDate", startDate);
     if (endDate) formData.append("endDate", endDate);
-    dispatch(createBanner(formData));
+    dispatch(createBanner(formData as any));
     // Do not show popup or reset fields here
   };
 

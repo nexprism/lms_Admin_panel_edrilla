@@ -4,26 +4,7 @@ import { fetchCourseSalesAnalytics } from "../../store/slices/salesAnalyticsSlic
 import { RootState, AppDispatch } from "../../store";
 import PopupAlert from "../../components/popUpAlert";
 import { deleteCourse } from "../../store/slices/course";
-import {
-  BarChart2,
-  ShoppingCart,
-  TrendingUp,
-  BookOpen,
-  Search,
-  SortAsc,
-  SortDesc,
-  Users,
-  Award,
-  Target,
-  Loader,
-  XCircle,
-  Eye,
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  Calendar,
-  PieChart,
-} from "lucide-react";
+import { BarChart2, ShoppingCart, TrendingUp, BookOpen, Search, SortAsc, SortDesc, Award, Target, Loader, XCircle, Eye, Filter, PieChart } from "lucide-react";
 
 interface CourseData {
   _id: string;
@@ -33,7 +14,7 @@ interface CourseData {
   totalSales: number;
 }
 
-interface SalesAnalyticsState {
+interface _SalesAnalyticsState {
   loading: boolean;
   error: string | null;
   data: CourseData[] | null;
@@ -96,7 +77,7 @@ const Course: React.FC = () => {
   const filteredAndSortedCourses = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
 
-    let filtered = data.filter((course) =>
+    const filtered = data.filter((course) =>
       course.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

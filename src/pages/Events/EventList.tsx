@@ -4,19 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchEvents } from "../../store/slices/event";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import {
-  Pencil,
-  CheckCircle,
-  XCircle,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Calendar,
-  Clock,
-  Users,
-} from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, RotateCcw, Calendar, Clock, Users } from "lucide-react";
 
 interface Event {
   _id: string;
@@ -54,7 +42,6 @@ const EventList: React.FC = () => {
   const { loading, error, data } = useAppSelector((state) => state.event);
   const eventData = data?.data || null;
   const events: Event[] = eventData?.data || [];
-  console.log('EventList Component: event data from Redux store:', events);
 
   // State for search, filter, pagination
   const [searchInput, setSearchInput] = useState("");

@@ -25,7 +25,7 @@ export const createModule = createAsyncThunk(
             estimatedDuration,
             isPublished,
             image, // New image field
-            token,
+            token: _token,
         }: {
             courseId: string;
             title: string;
@@ -140,7 +140,6 @@ export const getModuleById = createAsyncThunk(
                     Authorization: `Bearer ${token}`,
                 },
             });
-            console.log('Fetched module data:', response.data);
             return response.data?.data?.module;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || error.message);

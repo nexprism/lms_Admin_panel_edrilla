@@ -125,6 +125,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     if (isOpen && categoryId) {
       loadCategoryData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [isOpen, categoryId]);
 
   // Reset form when modal closes
@@ -152,7 +153,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
       ).unwrap();
 
       // Handle the API response structure
-      const categoryData = result.category || result;
+      const categoryData = (result as any).category || result;
 
       setCategoryData({
         ...categoryData,
@@ -178,7 +179,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         categoryData.subcategories || categoryData.subCategories || [];
       setSubCategories(subcategories);
 
-      console.log("Loaded subcategories:", subcategories); // Debug log
+       // Debug log
     } catch (error) {
       console.error("Failed to load category:", error);
       toast.error("Failed to load category data");

@@ -1,4 +1,14 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import { clearCredentials } from '../store/slices/authslice';
+
+// Store injection breaks the circular import store/index -> authslice -> axiosConfig
+// -> store/index, which left `authReducer` in the temporal dead zone and crashed the
+// whole app at boot (blank page). store/index.ts calls injectStore(store) right after
+// configureStore; interceptors only run long after that.
+let injectedStore: { dispatch: (action: unknown) => unknown } | null = null;
+export const injectStore = (s: { dispatch: (action: unknown) => unknown }) => {
+  injectedStore = s;
+};
 
 // API base URL
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.edrilla.com/';
@@ -6,6 +16,9 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.edrilla.com/'
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 3600000, // 1 hour in milliseconds
+  // Send the httpOnly auth cookie with every request (auth no longer depends on a
+  // JWT read from localStorage).
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -39,12 +52,16 @@ axiosInstance.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (error.response && error.response.status === 401) {
-      // Handle 401 Unauthorized errors
-      localStorage.removeItem('token');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      // You can add redirect logic here if needed
+      // Handle 401 Unauthorized errors.
+      // clearCredentials flips isAuthenticated=false in Redux AND removes the
+      // token/accessToken/refreshToken/user keys from localStorage, so the
+      // in-memory store stays consistent with the cleared session.
+      injectedStore?.dispatch(clearCredentials());
+      // Redirect to signin so the UI reflects the cleared session, guarding
+      // against a redirect loop when already on the signin page.
+      if (window.location.pathname !== '/signin') {
+        window.location.href = '/signin';
+      }
     }
     return Promise.reject(error);
   }

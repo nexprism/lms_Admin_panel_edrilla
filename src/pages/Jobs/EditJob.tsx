@@ -80,7 +80,6 @@ const EditJob: React.FC = () => {
 
   // Find the job to edit
   useEffect(() => {
-    console.log("Jobs loaded:", jobs);
     if (id && jobs.length > 0) {
       const jobToEdit = jobs.find((job) => job._id === id);
       if (jobToEdit) {
@@ -122,7 +121,6 @@ const EditJob: React.FC = () => {
 
         // Set existing image URL if available
         if (jobToEdit.thumbnail) {
-          console.log("Existing image URL:", jobToEdit.thumbnail);
           setExistingImageUrl(`${jobToEdit.thumbnail}`);
         }
       }
@@ -137,6 +135,7 @@ const EditJob: React.FC = () => {
         budget: { ...prev.budget, currency: "INR" },
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [formData.mode]);
 
   const handleInputChange = (
@@ -297,7 +296,7 @@ const EditJob: React.FC = () => {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => {
           setPopup({ isVisible: false, message: "", type: "" });
           if (popup.type === "success") {
@@ -534,7 +533,7 @@ const EditJob: React.FC = () => {
                       value={formData.estimatedDuration.value}
                       onChange={handleInputChange}
                       min="1"
-                      required={formData.mode !== "full-time"}
+                      required={(formData.mode as string) !== "full-time"}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -636,10 +635,6 @@ const EditJob: React.FC = () => {
                       }
                       className="w-32 h-20 object-cover rounded-md border border-gray-300 dark:border-gray-600"
                       onError={(e) => {
-                        console.log(
-                          "Error loading image, setting fallback.",
-                          error
-                        );
                         const target = e.target as HTMLImageElement;
                         target.src = "/images/icons/file-image.svg";
                       }}

@@ -27,7 +27,7 @@ export default function AddFilter() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleCategoryChange = (categoryId: string, categoryName: string) => {
+    const handleCategoryChange = (categoryId: string, _categoryName: string) => {
         setForm({ 
             ...form, 
             categoryId,
@@ -36,7 +36,7 @@ export default function AddFilter() {
         });
     };
 
-    const handleSubcategoryChange = (subcategoryId: string, subcategoryName: string) => {
+    const handleSubcategoryChange = (subcategoryId: string, _subcategoryName: string) => {
         setForm({ 
             ...form, 
             subCategoryId: subcategoryId
@@ -191,7 +191,7 @@ export default function AddFilter() {
             </div>
              <PopupAlert 
   message={popup.message}
-  type={popup.type}
+  type={popup.type as any}
   isVisible={popup.isVisible}
   onClose={() => setPopup({ ...popup, isVisible: false })}
 />

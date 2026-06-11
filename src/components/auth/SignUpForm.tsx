@@ -9,7 +9,7 @@ import {
   clearError,
   clearStatuses 
 } from '../../store/slices/authslice';
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
+import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
@@ -132,14 +132,12 @@ export default function SignUpForm() {
       };
 
       const resultAction = await dispatch(signup(signupData));
-      console.log('Signup result:', resultAction);
       
       // Dismiss loading toast
       toast.dismiss(loadingToast);
 
       if (signup.fulfilled.match(resultAction)) {
         // Success is handled in useEffect
-        console.log('Signup successful:', resultAction.payload);
       } else if (signup.rejected.match(resultAction)) {
         // Error is handled in useEffect
         console.error('Signup failed:', resultAction.payload);

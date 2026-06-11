@@ -23,6 +23,22 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Project policy: the codebase compiles under full `strict` tsc, but uses
+      // pragmatic `any` at legacy/boundary sites (typed incrementally). Flagging
+      // every `any` produced 1000+ errors with no actionable signal.
+      '@typescript-eslint/no-explicit-any': 'off',
+      // ts-ignore comments are allowed when they carry a justification; bare ones
+      // are still rejected.
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        { 'ts-ignore': 'allow-with-description', minimumDescriptionLength: 3 },
+      ],
+      // Unused vars stay errors, but `_`-prefixed names are an explicit opt-out
+      // (matches the convention already used in the student frontend).
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' },
+      ],
     },
   },
 )

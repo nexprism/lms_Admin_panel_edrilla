@@ -1,13 +1,12 @@
-import { CircleHelp, Delete, Pen, Plus, Save, Trash, X } from "lucide-react";
+import { CircleHelp, Pen, Plus, Save, Trash, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../../services/axiosConfig";
 import { useDispatch } from "react-redux";
-import { all } from "axios";
 import toast from "react-hot-toast";
 import PopupAlert from "../../../components/popUpAlert";
 
-function Faqs({ courseId }) {
-  const [allFaqs, setAllFaqs] = React.useState([]);
+function Faqs({ courseId }: any) {
+  const [allFaqs, setAllFaqs] = React.useState<any[]>([]);
   const [showPopup, setShowPopup] = React.useState(false);
   const [faqData, setFaqData] = React.useState({
     question: "",
@@ -23,13 +22,12 @@ function Faqs({ courseId }) {
     type: "success",
     isVisible: false,
   });
-  const [selectedFaq, setSelectedFaq] = React.useState(null);
-  const dispatch = useDispatch();
+  const [selectedFaq, setSelectedFaq] = React.useState<any>(null);
+  const _dispatch = useDispatch();
 
   const getFaqs = async () => {
     try {
       const faqs = await axiosInstance.get(`/faqs/course/${courseId}`);
-      console.log("faqs", faqs.data);
       setAllFaqs(faqs.data.data);
     } catch (error) {
       console.error("Error fetching FAQs:", error);
@@ -44,7 +42,7 @@ function Faqs({ courseId }) {
           answer: selectedFaq.answer,
           category: selectedFaq.category || "course",
         };
-        const response = await axiosInstance.put(
+        const _response = await axiosInstance.put(
           `/faqs/${selectedFaq._id}`,
           payload
         );
@@ -58,7 +56,7 @@ function Faqs({ courseId }) {
         setFaqData({
           question: "",
           answer: "",
-        });
+        } as any);
       } else {
         const payload: any = {
           courseId: courseId || "",
@@ -66,13 +64,12 @@ function Faqs({ courseId }) {
           answer: selectedFaq ? selectedFaq.answer : faqData.answer,
           category: selectedFaq ? (selectedFaq.category || "course") : (faqData.category || "course"),
         };
-        const response = await axiosInstance.post("/faqs", payload);
+        const _response = await axiosInstance.post("/faqs", payload);
         setPopup({
           message: "FAQ added successfully!",
           type: "success",
           isVisible: true,
         });
-        // console.log("response", response.data);
         setShowPopup(false);
         setSelectedFaq(null);
         setFaqData({
@@ -92,13 +89,13 @@ function Faqs({ courseId }) {
     }
   };
 
-  const deleteFaq = async (faqId) => {
+  const deleteFaq = async (faqId: any) => {
     if (!faqId) {
       toast.error("FAQ ID is required to delete.");
       return;
     }
     try {
-      const response = await axiosInstance.delete(`/faqs/${faqId}`);
+      const _response = await axiosInstance.delete(`/faqs/${faqId}`);
       setPopup({
         message: "FAQ deleted successfully!",
         type: "success",
@@ -109,7 +106,7 @@ function Faqs({ courseId }) {
       setFaqData({
         question: "",
         answer: "",
-      });
+      } as any);
       getFaqs();
     } catch (error) {
       console.error("Error deleting FAQ:", error);
@@ -125,6 +122,7 @@ function Faqs({ courseId }) {
     if (courseId) {
       getFaqs();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [courseId]);
   return (
     <>
@@ -149,7 +147,7 @@ function Faqs({ courseId }) {
                   setFaqData({
                     question: "",
                     answer: "",
-                  });
+                  } as any);
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
               >
@@ -213,6 +211,7 @@ function Faqs({ courseId }) {
                 </label>
                 <textarea
                   rows={4}
+                  // @ts-ignore - textarea doesn't accept `type`; kept to preserve runtime props
                   type="text"
                   required
                   value={selectedFaq ? selectedFaq?.answer : faqData?.answer}

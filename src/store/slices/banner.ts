@@ -61,7 +61,6 @@ export const fetchBanners = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const res = await axiosInstance.get("/banners");
-            console.log("Fetched banners:", res.data?.data?.banners);
             return res.data?.data?.banners || [];
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.message || err.message);

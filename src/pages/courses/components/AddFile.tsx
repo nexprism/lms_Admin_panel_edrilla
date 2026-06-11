@@ -1,14 +1,6 @@
-import React, { act, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  BookOpen,
-  FileText,
-  Upload,
-  X,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { FileText, Upload, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { createAssignment } from "../../../store/slices/assignment"; // Adjust path as needed
 import PopupAlert from "../../../components/popUpAlert";
 
@@ -25,7 +17,7 @@ export default function AddFile({
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: any) => state.assignment);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     language: "English",
     fileType: "",
     active: true,
@@ -49,7 +41,7 @@ export default function AddFile({
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: value,
     }));
@@ -60,14 +52,14 @@ export default function AddFile({
     type: "file" | "document"
   ) => {
     const file = e.target.files?.[0] || null;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [type]: file,
     }));
   };
 
   const removeFile = (type: "file" | "document") => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [type]: null,
     }));
@@ -395,7 +387,7 @@ export default function AddFile({
       </div>
       <PopupAlert
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         isVisible={popup.isVisible}
         onClose={() => setPopup({ ...popup, isVisible: false })}
       />

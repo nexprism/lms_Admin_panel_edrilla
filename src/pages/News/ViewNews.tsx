@@ -1,22 +1,9 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchNewsById } from "../../store/slices/news";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  User,
-  Eye,
-  Tag,
-  MapPin,
-  Edit3,
-  Share2,
-  Bookmark,
-  MessageCircle,
-  FileText,
-  Globe,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, Eye, Tag, MapPin, Edit3, Share2, MessageCircle, FileText, Globe } from "lucide-react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 
@@ -39,7 +26,7 @@ const extractText = (val: any): string => {
     if (typeof val.content === "string") return val.content;
     if (Array.isArray(val.items)) {
       return val.items
-        .map((i) => extractText(i))
+        .map((i: any) => extractText(i))
         .filter(Boolean)
         .join(", ");
     }
@@ -94,19 +81,21 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
   return blocks
     .map((block) => {
       switch (block.type) {
-        case "paragraph":
+        case "paragraph": {
           const text = block.data?.text || "";
           // Allow basic HTML in paragraphs (from EditorJS inline formatting)
           return `<p class="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">${text}</p>`;
+        }
 
-        case "header":
+        case "header": {
           const level = block.data?.level || 2;
           const headerText = block.data?.text || "";
           const HeaderTag = `h${level}`;
           // Allow basic HTML in headers
           return `<${HeaderTag} class="mb-4 mt-6 font-bold text-gray-900 dark:text-white">${headerText}</${HeaderTag}>`;
+        }
 
-        case "list":
+        case "list": {
           const items = block.data?.items || [];
           const style = block.data?.style || "unordered";
           const listTag = style === "ordered" ? "ol" : "ul";
@@ -115,8 +104,9 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
             .map((item: string) => `<li class="mb-2 text-gray-700 dark:text-gray-300">${item}</li>`)
             .join("");
           return `<${listTag} class="${listClass}">${listItems}</${listTag}>`;
+        }
 
-        case "quote":
+        case "quote": {
           const quoteText = block.data?.text || "";
           const quoteCaption = block.data?.caption || "";
           return `
@@ -125,8 +115,9 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               ${quoteCaption ? `<cite class="text-sm text-gray-500 dark:text-gray-400">— ${escapeHtml(quoteCaption)}</cite>` : ""}
             </blockquote>
           `;
+        }
 
-        case "image":
+        case "image": {
           const imageUrl = block.data?.file?.url || block.data?.url || "";
           const imageCaption = block.data?.caption || "";
           const imageAlt = block.data?.alt || imageCaption || "Image";
@@ -146,8 +137,9 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               ${imageCaption ? `<figcaption class="mt-2 text-sm text-center text-gray-600 dark:text-gray-400 italic">${imageCaption.replace(/"/g, '&quot;')}</figcaption>` : ""}
             </figure>
           `;
+        }
 
-        case "video":
+        case "video": {
           const videoUrl = block.data?.url || block.data?.file?.url || "";
           if (!videoUrl) return "";
           const finalVideoUrl = videoUrl.startsWith("http://") || videoUrl.startsWith("https://") 
@@ -164,8 +156,9 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               </video>
             </div>
           `;
+        }
 
-        case "audio":
+        case "audio": {
           const audioUrl = block.data?.url || block.data?.file?.url || "";
           if (!audioUrl) return "";
           const finalAudioUrl = audioUrl.startsWith("http://") || audioUrl.startsWith("https://") 
@@ -182,8 +175,9 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               </audio>
             </div>
           `;
+        }
 
-        case "youtube":
+        case "youtube": {
           const youtubeId = block.data?.videoId || "";
           if (!youtubeId) return "";
           return `
@@ -197,9 +191,10 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               ></iframe>
             </div>
           `;
+        }
 
         case "twitter":
-        case "facebook":
+        case "facebook": {
           const embedUrl = block.data?.url || "";
           if (!embedUrl) return "";
           return `
@@ -211,6 +206,7 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
               ></iframe>
             </div>
           `;
+        }
 
         default:
           // For unknown block types, try to render as JSON
@@ -221,7 +217,7 @@ const renderEditorJSBlocks = (blocks: any[]): string => {
 };
 
 // Helper to format scheduled publication datetime
-const formatSchedule = (dateStr?: string | null) => {
+const _formatSchedule = (dateStr?: string | null) => {
   if (!dateStr) return "-";
   try {
     return new Date(dateStr).toLocaleString("en-IN", {
@@ -486,9 +482,12 @@ export default function ViewNews() {
                   `}</style>
                   {news.content ? (
                     (() => {
-                      const renderedContent = renderEditorJSContent(news.content);
+                      const renderedContent = DOMPurify.sanitize(
+                        renderEditorJSContent(news.content),
+                        { ADD_TAGS: ["iframe"], ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "loading", "controls", "target"] }
+                      );
                       return renderedContent ? (
-                        <div 
+                        <div
                           dangerouslySetInnerHTML={{ __html: renderedContent }}
                           className="news-content"
                         />

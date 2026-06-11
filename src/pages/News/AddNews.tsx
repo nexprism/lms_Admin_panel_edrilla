@@ -7,22 +7,7 @@ import type { OutputData } from "@editorjs/editorjs";
 import PopupAlert from "../../components/popUpAlert";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import {
-  Save,
-  X,
-  FileText,
-  User,
-  Tag,
-  Upload,
-  Clock,
-  TrendingUp,
-  Hash,
-  Video,
-  Calendar,
-  Radio,
-  Zap,
-  MapPin,
-} from "lucide-react";
+import { Save, X, FileText, User, Tag, Upload, Clock, TrendingUp, Hash, Video, Calendar, Zap } from "lucide-react";
 
 const predefinedTags = [
   "breaking",
@@ -796,7 +781,7 @@ export default function AddNews() {
       <PopupAlert
         isVisible={popup.isVisible}
         message={popup.message}
-        type={popup.type}
+        type={popup.type as any}
         onClose={() => setPopup({ isVisible: false, message: "", type: "" })}
       />
     </>

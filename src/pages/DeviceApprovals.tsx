@@ -84,7 +84,7 @@ export default function DeviceApprovals() {
 
   // Email search state
   const [emailSearch, setEmailSearch] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const _debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Add per-row loading state
   const [rowLoading, setRowLoading] = useState<{ [id: string]: boolean }>({});

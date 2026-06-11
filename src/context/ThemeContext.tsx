@@ -49,6 +49,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentional: hook/constant exported alongside provider in this context file
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {

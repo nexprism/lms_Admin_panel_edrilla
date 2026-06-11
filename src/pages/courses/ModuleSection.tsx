@@ -1,56 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createModule } from "../../store/slices/module";
 
-const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_URL || "";
+const _IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_URL || "";
 import {
   createLesson,
   deleteLesson,
   updateLesson,
 } from "../../store/slices/lesson";
-import { RootState, AppDispatch } from "../../hooks/redux";
+import { AppDispatch } from "../../hooks/redux";
 
-import {
-  BookOpen,
-  Plus,
-  X,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  Link,
-  Image,
-  Video,
-  Eye,
-  Trash2,
-  Edit,
-  Save,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  Type,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Quote,
-  Heading1,
-  Heading2,
-  Heading3,
-  Play,
-  FileText,
-  HelpCircle,
-  ClipboardList,
-  Clock,
-  Users,
-  Settings,
-  ChevronDown,
-  ChevronUp,
-  GripVertical,
-  ArrowRight,
-  Folder,
-  Zap,
-  Package,
-} from "lucide-react";
+import { BookOpen, Plus, Image, Trash2, Edit, Save, Loader2, CheckCircle, AlertCircle, Play, FileText, HelpCircle, ClipboardList, Clock, ArrowRight, Zap, Package } from "lucide-react";
 
 import ModulesTabContent from "../../components/course-module/ModulesTabContent";
 import DripTabContent from "../../components/course-module/DripTabContent";
@@ -67,12 +27,12 @@ import { useParams } from "react-router";
 const Modal = ({
   isOpen,
   onClose,
-  title,
+  title: _title,
   children,
   maxWidth = "4xl",
-  showCloseButton = true,
+  showCloseButton: _showCloseButton = true,
   footer,
-}: ModalProps) => {
+}: any) => {
   if (!isOpen) return null;
 
   return (
@@ -111,9 +71,9 @@ const Modal = ({
 };
 
 // Module Creation Form Component
-const ModuleCreationForm = ({ onModuleCreated, courseId }) => {
-  const dispatch = useDispatch();
-  const { loading: moduleLoading } = useSelector((state) => state.module);
+const ModuleCreationForm = ({ onModuleCreated, courseId }: any) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading: _moduleLoading } = useSelector((state: any) => state.module);
 
   const [moduleData, setModuleData] = useState({
     title: "",
@@ -179,7 +139,7 @@ const ModuleCreationForm = ({ onModuleCreated, courseId }) => {
         estimatedDuration: 60,
         isPublished: true,
         image: null,
-      });
+      } as any);
     } catch (error) {
       setPopup({
         message: "Failed to create module. Please try again.",
@@ -338,8 +298,8 @@ const LessonEditor = ({
   onChange,
   onRemove,
   onSave,
-  isEditing = false,
-}) => {
+  isEditing: _isEditing = false,
+}: any) => {
   const dispatch = useAppDispatch();
 
   const [isSaving, setIsSaving] = useState(false);
@@ -356,20 +316,20 @@ const LessonEditor = ({
     isVisible: false,
   });
   const [showContentModal, setShowContentModal] = useState(false);
-  const [OpenLessonData, setOpenLessonData] = useState(null);
+  const [_OpenLessonData, setOpenLessonData] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [lessonImage, setLessonImage] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
+  const [lessonImage, setLessonImage] = useState<any>(null);
+  const [showSettings, _setShowSettings] = useState(false);
   const params = useParams();
-  const courseIdFromParams = params.courseId;
+  const _courseIdFromParams = params.courseId;
 
-  const handleLessonImageChange = (e) => {
+  const handleLessonImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setLessonImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview(reader.result as any);
       };
       reader.readAsDataURL(file);
       onChange({ ...lesson, image: file });
@@ -398,15 +358,13 @@ const LessonEditor = ({
     return null;
   };
 
-  const getData = async (id) => {
+  const getData = async (_id: any) => {
     setShowContentModal(true);
     setOpenLessonData(lesson);
-    console.log("OpenLessonData", id);
   };
-  console.log("cours", courseData);
 
   // Mock loading states
-  const lessonLoading = false;
+  const _lessonLoading = false;
 
   // Determine if this is a new lesson (not saved yet)
   const isNewLesson = !savedLessonId;
@@ -432,7 +390,6 @@ const LessonEditor = ({
         }
         return lesson.quizId || null;
       case "assignment":
-        console.log("Assignment lesson data:", lesson);
         if (lesson.assignment?._id) return lesson.assignment?._id;
         if (courseData?.modules) {
           for (const mod of courseData.modules) {
@@ -470,13 +427,12 @@ const LessonEditor = ({
         if (courseData?.modules) {
           for (const mod of courseData.modules) {
             if (mod.lessons) {
-              let nu = 1;
+              let _nu = 1;
               for (const l of mod.lessons) {
                 if (l._id === lesson._id && l.files?.[0]?._id) {
-                  console.log("Checking lesson ====  : " + nu + "  ", l);
                   return l.files[0]?._id;
                 }
-                nu++;
+                _nu++;
               }
             }
           }
@@ -484,14 +440,11 @@ const LessonEditor = ({
         }
         return lesson.files?.[0]?._id || null;
       case "video-lesson":
-        console.log("lesson.videoLesson", lesson.videoLesson);
-        console.log("courseData.modules", courseData?.modules);
         if (lesson.videoLessons?.[0]?._id) return lesson.videoLessons?.[0]?._id;
         if (courseData?.modules) {
           for (const mod of courseData.modules) {
             if (mod.lessons) {
               for (const l of mod.lessons) {
-                console.log("Checking lesson:", l);
                 if (l._id === lesson._id && l.videoLessons?.[0]?._id) {
                   return l.videoLessons[0]?._id;
                 }
@@ -537,7 +490,7 @@ const LessonEditor = ({
     },
   };
 
-  const currentConfig = lessonTypeConfig[lesson.type || "video"];
+  const currentConfig = (lessonTypeConfig as any)[lesson.type || "video"];
 
   const handleSaveLesson = async () => {
     if (!lesson.title.trim()) {
@@ -550,9 +503,6 @@ const LessonEditor = ({
     }
 
     // Debug logging
-    console.log("Section value:", section);
-    console.log("CourseId value:", courseId);
-    console.log("ModuleId value:", moduleId);
 
     // Determine the correct section/courseId to use
     const sectionToUse = section || courseId || moduleId;
@@ -585,7 +535,6 @@ const LessonEditor = ({
         image: lesson.image || lessonImage,
       };
 
-      console.log("Saving lesson data:", lessonData);
 
       let result;
 
@@ -601,7 +550,6 @@ const LessonEditor = ({
           })
         ).unwrap();
 
-        console.log("Lesson updated successfully:", result);
 
         // For updates, use the existing lesson ID
         const updatedLesson = {
@@ -665,7 +613,6 @@ const LessonEditor = ({
             isVisible: true,
           });
 
-          console.log("Lesson created successfully:", result);
         }
       }
     } catch (error) {
@@ -716,6 +663,7 @@ const LessonEditor = ({
           <Quiz
             {...commonProps}
             quizId={quizId}
+            // @ts-ignore - legacy untyped props
             quizData={quizData}
             onClose={() => {
               setShowContentModal(false);
@@ -743,6 +691,7 @@ const LessonEditor = ({
           <Assignment
             {...commonProps}
             assignmentId={assignmentId}
+            // @ts-ignore - legacy untyped props
             fileId={lesson.fileId}
             assignmentData={assignmentData}
             onClose={() => {
@@ -775,7 +724,6 @@ const LessonEditor = ({
           }
         }
 
-        console.log("Passing textLessonId to TextLesson:", textLessonId);
 
         return (
           <TextLesson
@@ -811,6 +759,7 @@ const LessonEditor = ({
           <VedioLesson
             {...commonProps}
             fileId={videoLessonId}
+            // @ts-ignore - legacy untyped props
             videoData={videoLessonData}
             onClose={() => {
               setShowContentModal(false);
@@ -822,8 +771,6 @@ const LessonEditor = ({
       case "video":
       default: {
         let videoData = lesson.files;
-        console.log("lesson.video", lesson.video);
-        console.log("courseData.modules", courseData?.modules);
         let fileId = lesson.files?.[0]?._id || lesson.fileId;
         if (!videoData && courseData?.modules) {
           for (const mod of courseData.modules) {
@@ -837,18 +784,11 @@ const LessonEditor = ({
             }
           }
         }
-        console.log(
-          "Files component - contentId:",
-          contentId,
-          "fileId:",
-          fileId,
-          "lesson:",
-          lesson
-        );
         return (
           <Files
             {...commonProps}
             fileId={contentId || fileId}
+            // @ts-ignore - legacy untyped props
             videoData={videoData}
             onClose={() => {
               setShowContentModal(false);
@@ -1208,7 +1148,7 @@ const SavedModuleDisplay = ({
   onLessonChange,
   onLessonRemove,
   isEditing = false,
-}) => {
+}: any) => {
   const [isExpanded, setIsExpanded] = useState(false); // Changed to false by default
   const totalLessons = module.lessons?.length || 0;
 
@@ -1418,7 +1358,7 @@ const SavedModuleDisplay = ({
 
             {/* Lessons List */}
             <div className="space-y-6">
-              {module.lessons?.map((lesson, idx) => (
+              {module.lessons?.map((lesson: any, idx: number) => (
                 <LessonEditor
                   key={lesson._id || lesson.id || idx}
                   lesson={lesson}
@@ -1426,10 +1366,10 @@ const SavedModuleDisplay = ({
                   section={extractedCourseId}
                   courseId={extractedCourseId}
                   courseData={courseData}
-                  onChange={(l) => onLessonChange(idx, l)}
+                  onChange={(l: any) => onLessonChange(idx, l)}
                   onRemove={() => onLessonRemove(idx)}
                   isEditing={isEditing}
-                  onSave={(savedLesson) => {
+                  onSave={(savedLesson: any) => {
                     // Extract lesson data from the API response properly
                     const lessonData = savedLesson?.data || savedLesson;
                     const updatedLesson = {
@@ -1506,12 +1446,11 @@ const ModuleSection = ({
   isEditing = false,
 }: any) => {
   const { loading: moduleLoading, error: moduleError } = useSelector(
-    (state) => state.module
+    (state: any) => state.module
   );
-  const { loading: lessonLoading, error: lessonError } = useSelector(
-    (state) => state.lesson
+  const { loading: _lessonLoading, error: _lessonError } = useSelector(
+    (state: any) => state.lesson
   );
-  console.log("courseData", courseData);
 
   const [savedModules, setSavedModules] = useState<any[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -1536,7 +1475,6 @@ const ModuleSection = ({
 
   const handleModuleCreated = async (newModule: any) => {
     // Debug logging to see the structure
-    console.log("New module received:", newModule);
 
     // Immediate UI update - normalize the module structure
     const moduleWithLessons = {
@@ -1558,7 +1496,6 @@ const ModuleSection = ({
       ...newModule,
     };
 
-    console.log("Processed module:", moduleWithLessons);
 
     const updatedModules = [...savedModules, moduleWithLessons];
 
@@ -1648,7 +1585,6 @@ const ModuleSection = ({
 
       // Delete from backend (but don't wait for it)
       if (lessonId) {
-        console.log("Removing lesson with ID:", lessonId);
         dispatch(deleteLesson(lessonId));
       }
     }

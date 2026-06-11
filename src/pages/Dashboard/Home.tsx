@@ -1,21 +1,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { fetchOverview } from "../../store/slices/dashboard";
-import {
-  BookOpen,
-  Users,
-  MessageSquare,
-  HelpCircle,
-  TrendingUp,
-  DollarSign,
-  Calendar,
-  IndianRupee,
-  Eye,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
+import { BookOpen, Users, MessageSquare, HelpCircle, TrendingUp, IndianRupee, Eye, ChevronRight, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 const Home: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -243,7 +229,7 @@ const Home: React.FC = () => {
               <Eye className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-4">
-              {latest?.courses?.slice(0, 3).map((course) => (
+              {latest?.courses?.slice(0, 3).map((course: any) => (
                 <div key={course._id} className="flex items-start space-x-3">
                   <img
                     src={course.thumbnail}
@@ -282,7 +268,7 @@ const Home: React.FC = () => {
               <HelpCircle className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-4">
-              {latest?.supportTickets?.slice(0, 3).map((ticket) => (
+              {latest?.supportTickets?.slice(0, 3).map((ticket: any) => (
                 <div
                   key={ticket?._id}
                   className="border-l-4 border-blue-500 pl-4"
@@ -326,7 +312,7 @@ const Home: React.FC = () => {
               <MessageSquare className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-4">
-              {latest?.forumThreads?.slice(0, 3)?.map((thread) => (
+              {latest?.forumThreads?.slice(0, 3)?.map((thread: any) => (
                 <div key={thread._id} className="space-y-2">
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">

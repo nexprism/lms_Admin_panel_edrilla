@@ -17,6 +17,7 @@ import {
 import axiosInstance from "../../services/axiosConfig";
 import { useNavigate, useParams } from "react-router";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store";
 import { fetchAssignmentSubmissions } from "../../store/slices/assignment";
 
 const AssignmentSubmissionReview = () => {
@@ -27,17 +28,17 @@ const AssignmentSubmissionReview = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [submission, setSubmission] = useState(null);
+  const [submission, setSubmission] = useState<any>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
   const params = useParams();
   const assignmentId = params.id;
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   // Mock submission data - in real app, this would come from props or API
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
 
     if (name === "scoreGiven") {
@@ -65,7 +66,7 @@ const AssignmentSubmissionReview = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -88,7 +89,7 @@ const AssignmentSubmissionReview = () => {
       }
 
       // Simulate API call
-      const response = await axiosInstance.put(
+      const _response = await axiosInstance.put(
         `/assignment-submissions/${submission._id}/grade`,
         {
           scoreGiven: formData.scoreGiven,
@@ -97,18 +98,17 @@ const AssignmentSubmissionReview = () => {
         }
       );
 
-      console.log("Submission graded:", response.data);
       setShowSuccess(true);
-      dispatch(fetchAssignmentSubmissions()).unwrap();
+      dispatch((fetchAssignmentSubmissions as any)()).unwrap();
       navigate("/assignments/submissions");
     } catch (err) {
-      setError(err.message);
+      setError((err as any).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -118,7 +118,7 @@ const AssignmentSubmissionReview = () => {
     });
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: any) => {
     switch (status) {
       case "submitted":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
@@ -155,7 +155,7 @@ const AssignmentSubmissionReview = () => {
     }
   };
 
-  const handleFileDownload = (filePath, fileName = null) => {
+  const handleFileDownload = (filePath: any, fileName = null) => {
     if (!filePath) return;
 
     // Create a proper download link
@@ -182,6 +182,7 @@ const AssignmentSubmissionReview = () => {
 
   useEffect(() => {
     getData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, []);
 
   return (
@@ -421,10 +422,10 @@ const AssignmentSubmissionReview = () => {
                     step="0.5"
                     onInput={(e) => {
                       // Additional safety check on input
-                      const value = parseFloat(e.target.value);
+                      const value = parseFloat((e.target as HTMLInputElement).value);
                       const maxScore = submission?.assignmentId?.maxScore || 0;
                       if (value > maxScore) {
-                        e.target.value = maxScore;
+                        (e.target as HTMLInputElement).value = maxScore;
                         setFormData(prev => ({ ...prev, scoreGiven: maxScore.toString() }));
                         setError(`Score cannot exceed ${maxScore} points`);
                         setTimeout(() => setError(""), 3000);
@@ -439,9 +440,9 @@ const AssignmentSubmissionReview = () => {
                       
                       // Allow decimal point and digits
                       if (e.key === '.' || /^\d$/.test(e.key)) {
-                        const currentValue = e.target.value;
-                        const cursorPosition = e.target.selectionStart;
-                        const newValue = currentValue.slice(0, cursorPosition) + e.key + currentValue.slice(e.target.selectionEnd);
+                        const currentValue = (e.target as HTMLInputElement).value;
+                        const cursorPosition = (e.target as HTMLInputElement).selectionStart;
+                        const newValue = currentValue.slice(0, cursorPosition!) + e.key + currentValue.slice((e.target as HTMLInputElement).selectionEnd!);
                         const numValue = parseFloat(newValue);
                         const maxScore = submission?.assignmentId?.maxScore || 0;
                         

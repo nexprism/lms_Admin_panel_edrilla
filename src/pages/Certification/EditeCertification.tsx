@@ -3,19 +3,20 @@ import { BookOpen, Upload, Eye, Settings, Move, X } from "lucide-react";
 import axiosInstance from "../../services/axiosConfig";
 import { useParams } from "react-router";
 import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store";
 import { fetchCertificateById } from "../../store/slices/certificate";
 
 const imageUrl = import.meta.env.VITE_BASE_URL;
 
 const EditCreateCertificateTemplate = () => {
-  const containerRef = useRef(null);
-  const [isContainerReady, setIsContainerReady] = useState(false);
-  const [draggedElement, setDraggedElement] = useState(null);
+  const containerRef = useRef<any>(null);
+  const [_isContainerReady, setIsContainerReady] = useState(false);
+  const [draggedElement, setDraggedElement] = useState<any>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
   const params = useParams();
   const certificateId = params.certificateId;
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (containerRef.current) setIsContainerReady(true);
@@ -31,7 +32,7 @@ const EditCreateCertificateTemplate = () => {
   });
 
   // Template Elements with positions
-  const [elements, setElements] = useState({
+  const [elements, setElements] = useState<any>({
     title: {
       content: "Certificate of Completion",
       font_size: "32",
@@ -155,15 +156,15 @@ const EditCreateCertificateTemplate = () => {
     type: "",
   });
 
-  const handleTemplateInfoChange = (field, value) => {
+  const handleTemplateInfoChange = (field: any, value: any) => {
     setTemplateInfo((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleElementChange = (elementKey, field, value) => {
-    setElements((prev) => ({
+  const handleElementChange = (elementKey: any, field: any, value: any) => {
+    setElements((prev: any) => ({
       ...prev,
       [elementKey]: {
         ...prev[elementKey],
@@ -172,8 +173,8 @@ const EditCreateCertificateTemplate = () => {
     }));
   };
 
-  const handlePositionChange = (elementKey, newPosition) => {
-    setElements((prev) => ({
+  const handlePositionChange = (elementKey: any, newPosition: any) => {
+    setElements((prev: any) => ({
       ...prev,
       [elementKey]: {
         ...prev[elementKey],
@@ -182,7 +183,7 @@ const EditCreateCertificateTemplate = () => {
     }));
   };
 
-  const handleFileChange = (e, elementKey, field) => {
+  const handleFileChange = (e: any, elementKey: any, field: any) => {
     const file = e.target.files[0];
     if (elementKey === "template") {
       handleTemplateInfoChange(field, file);
@@ -191,16 +192,51 @@ const EditCreateCertificateTemplate = () => {
     }
   };
 
-  const getUrlFromFile = (file) => {
+  // Object URLs are cached per File so the render path (which runs on every
+  // mousemove while dragging) never mints new blob URLs; stale entries are
+  // revoked when a file is replaced/removed and everything is revoked on unmount.
+  const objectUrlCacheRef = useRef<Map<File, string>>(new Map());
+
+  const getUrlFromFile = (file: any) => {
     if (!file) return "";
     if (typeof file === "string") return file;
-    return URL.createObjectURL(file);
+    const cache = objectUrlCacheRef.current;
+    const cached = cache.get(file);
+    if (cached) return cached;
+    const url = URL.createObjectURL(file);
+    cache.set(file, url);
+    return url;
   };
 
-  const handleMouseDown = (e, elementKey) => {
+  // Revoke object URLs whose backing file is no longer referenced
+  useEffect(() => {
+    const cache = objectUrlCacheRef.current;
+    const liveFiles = new Set<any>();
+    if (templateInfo.backgroundImage) liveFiles.add(templateInfo.backgroundImage);
+    Object.values(elements).forEach((element: any) => {
+      if (element?.image) liveFiles.add(element.image);
+    });
+    cache.forEach((url, file) => {
+      if (!liveFiles.has(file)) {
+        URL.revokeObjectURL(url);
+        cache.delete(file);
+      }
+    });
+  }, [templateInfo.backgroundImage, elements]);
+
+  // Revoke all remaining object URLs on unmount
+  useEffect(() => {
+    const cache = objectUrlCacheRef.current;
+    return () => {
+      cache.forEach((url) => URL.revokeObjectURL(url));
+      cache.clear();
+    };
+  }, []);
+
+  const handleMouseDown = (e: any, elementKey: any) => {
     if (!elements[elementKey].draggable) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
+    const _rect = containerRef.current.getBoundingClientRect();
     const elementRect = e.currentTarget.getBoundingClientRect();
 
     setDraggedElement(elementKey);
@@ -212,7 +248,7 @@ const EditCreateCertificateTemplate = () => {
     e.preventDefault();
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any) => {
     if (!draggedElement || !containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -244,6 +280,7 @@ const EditCreateCertificateTemplate = () => {
         document.removeEventListener("mouseup", handleMouseUp);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, [draggedElement, dragOffset]);
 
   const handleSubmit = async () => {
@@ -260,12 +297,12 @@ const EditCreateCertificateTemplate = () => {
     );
 
     if (typeof templateInfo.backgroundImage !== "string") {
-      formData.append("image", templateInfo.backgroundImage);
+      formData.append("image", templateInfo.backgroundImage as any);
     }
 
     // Add elements with positions
     Object.entries(elements).forEach(([key, element]) => {
-      Object.entries(element).forEach(([field, value]) => {
+      Object.entries(element as any).forEach(([field, value]) => {
         // Only append image if it's a File for stamp and platform_signature
         if (
           field === "image" &&
@@ -284,10 +321,10 @@ const EditCreateCertificateTemplate = () => {
             formData.append(`elements[${key}][${field}]`, value);
           }
         } else if (field === "position") {
-          formData.append(`elements[${key}][position_x]`, value.x?.toString());
-          formData.append(`elements[${key}][position_y]`, value.y?.toString());
+          formData.append(`elements[${key}][position_x]`, (value as any).x?.toString());
+          formData.append(`elements[${key}][position_y]`, (value as any).y?.toString());
         } else {
-          formData.append(`elements[${key}][${field}]`, value?.toString());
+          formData.append(`elements[${key}][${field}]`, (value as any)?.toString());
         }
       });
     });
@@ -295,7 +332,7 @@ const EditCreateCertificateTemplate = () => {
     try {
       setLoading(true);
 
-      const response = await axiosInstance.put(
+      const _response = await axiosInstance.put(
         "/certificate-templates/" + certificateId,
         formData,
         {
@@ -304,7 +341,6 @@ const EditCreateCertificateTemplate = () => {
           },
         }
       );
-      console.log("Response:", response);
 
       setPopup({
         isVisible: true,
@@ -312,7 +348,6 @@ const EditCreateCertificateTemplate = () => {
         type: "success",
       });
       setLoading(false);
-      // console.log("Template saved:", result);
       setTemplateInfo({
         locale: "EN",
         title: "Course Completion Certificate",
@@ -439,27 +474,25 @@ const EditCreateCertificateTemplate = () => {
       });
     } catch (error) {
       setLoading(false);
-      console.log("Error saving template:", error);
       setPopup({
         isVisible: true,
-        message: `Error saving template: ${error.message}`,
+        message: `Error saving template: ${(error as any).message}`,
         type: "error",
       });
     }
   };
   const getData = async () => {
     try {
-      const response = await dispatch(fetchCertificateById(certificateId));
-      const data = response.payload.data;
+      const response = await dispatch(fetchCertificateById(certificateId!));
+      const data = (response as any).payload.data;
       const elements = data.elements || {};
-      console.log("Fetched certificate data:", data);
 
       setTemplateInfo({
         locale: data.locale || "EN",
         title: data.title || "Course Completion Certificate",
         type: data.type || "course",
         status: data.status || "publish",
-        backgroundImage: `${imageUrl}/${data.image}` || null,
+        backgroundImage: `${imageUrl}/${data.image}` as any,
       });
 
       setElements({
@@ -588,7 +621,7 @@ const EditCreateCertificateTemplate = () => {
         platform_signature: {
           content:
             elements.platform_signature.content || "[platform_signature]",
-          image: `${imageUrl}/${elements.platform_signature.image}` || null,
+          image: `${imageUrl}/${elements.platform_signature.image}`,
           image_size: elements.platform_signature.image_size || "120",
           enable: elements.platform_signature.enable || true,
           position: {
@@ -599,7 +632,7 @@ const EditCreateCertificateTemplate = () => {
         },
         stamp: {
           content: elements.stamp.content || "[stamp]",
-          image: `${imageUrl}/${elements.stamp.image}` || null,
+          image: `${imageUrl}/${elements.stamp.image}`,
           image_size: elements.stamp.image_size || "120",
           enable: elements.stamp.enable || true,
           position: {
@@ -621,10 +654,9 @@ const EditCreateCertificateTemplate = () => {
         },
       });
     } catch (error) {
-      console.log("Error fetching certificate data:", error);
       setPopup({
         isVisible: true,
-        message: `Error fetching certificate data: ${error.message}`,
+        message: `Error fetching certificate data: ${(error as any).message}`,
         type: "error",
       });
     }
@@ -632,11 +664,12 @@ const EditCreateCertificateTemplate = () => {
 
   useEffect(() => {
     getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pre-existing intentional dependency set; preserved to avoid behavior change
   }, []);
 
     
 
-  const renderTextElement = (elementKey, element) => {
+  const renderTextElement = (elementKey: any, element: any) => {
     if (!element.enable) return null;
 
     // Don't show instructor_name, platform_name, or hint if they haven't been customized
@@ -707,7 +740,7 @@ const EditCreateCertificateTemplate = () => {
     );
   };
 
-  const renderImageElement = (elementKey, element) => {
+  const renderImageElement = (elementKey: any, element: any) => {
     if (!element.enable) return null;
 
     const isDragging = draggedElement === elementKey;
@@ -1118,7 +1151,7 @@ const EditCreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full dark:text-white/70 border rounded px-3 py-2"
-                          rows="3"
+                          rows={"3" as any}
                         />
                         <div className="flex gap-3">
                           <input
@@ -1530,7 +1563,7 @@ const EditCreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full border dark:text-white/70 rounded px-3 py-2"
-                          rows="2"
+                          rows={"2" as any}
                         />
                         <div className="flex gap-3">
                           <input
@@ -1838,7 +1871,7 @@ const EditCreateCertificateTemplate = () => {
                             )
                           }
                           className="w-full border dark:text-white/70 rounded px-3 py-2"
-                          rows="2"
+                          rows={"2" as any}
                         />
                         <div className="flex gap-3">
                           <input

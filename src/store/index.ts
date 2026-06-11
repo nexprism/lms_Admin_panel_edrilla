@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { injectStore } from "../services/axiosConfig";
 import authReducer from "./slices/authslice";
 import courseCategoryReducer from "./slices/courseCategorySlice";
 // import courseReducer from './slices/courseSlice';
@@ -79,6 +80,10 @@ export const store = configureStore({
       },
     }),
 });
+
+// Hand the store to the axios layer (breaks the static circular import that
+// crashed the app at boot — see injectStore in services/axiosConfig.ts).
+injectStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
