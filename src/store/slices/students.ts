@@ -13,7 +13,9 @@ export const bulkEnrollStudents = createAsyncThunk<
   { rejectValue: string }
 >("students/bulkEnrollStudents", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/bulk-import", formData, {
+    // POST /enrollment/bulk-enroll (admin-only). Expects multipart fields:
+    // file (.xlsx/.xls), courseId, planId, and optional accessExpiry.
+    const response = await axiosInstance.post("/enrollment/bulk-enroll", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data as BulkEnrollResponse;
@@ -32,8 +34,9 @@ import axiosInstance from "../../services/axiosConfig";
 
 // types.ts
 export interface Student {
-  isShadowBanned: string;
-  isBanned: string;
+  // Backend user model stores these as Booleans (lms_backend/models/user.js)
+  isShadowBanned: boolean;
+  isBanned: boolean;
   _id: string;
   name: string;
   fullName: string;
@@ -45,6 +48,7 @@ export interface Student {
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
+  banReason?: string;
 }
 
 export interface FetchStudentsParams {
@@ -134,15 +138,18 @@ export interface BanStudentPayload {
 }
 
 export const banStudent = createAsyncThunk<
-  { userId: string; banType: string; banReason: string },
+  { userId: string; banType: "shadowBan" | "ban"; banReason: string },
   BanStudentPayload
 >("students/banStudent", async (payload, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(
-      `${API_BASE_URL}/ban-shadow-ban`,
-      payload
-    );
-    return response.data?.data;
+    // Backend responds with data: { user } (no userId/banType fields), so the
+    // request payload is the reliable source for the reducer's identifiers.
+    await axiosInstance.put(`${API_BASE_URL}/ban-shadow-ban`, payload);
+    return {
+      userId: payload.userId,
+      banType: payload.banType,
+      banReason: payload.banReason,
+    };
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || error.message);
   }
@@ -150,14 +157,13 @@ export const banStudent = createAsyncThunk<
 
 export const unbanStudent = createAsyncThunk<
   { userId: string },
-  BanStudentPayload
+  { userId: string }
 >("students/unbanStudent", async (payload, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(
-      `${API_BASE_URL}/unban-user`,
-      payload
-    );
-    return response.data?.data;
+    // Backend responds with data: { user } (no userId field), so return the
+    // request payload's userId for the reducer.
+    await axiosInstance.put(`${API_BASE_URL}/unban-user`, payload);
+    return { userId: payload.userId };
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || error.message);
   }
@@ -491,7 +497,7 @@ const studentSlice = createSlice({
         state.loading = false;
 
         // Assuming the response contains the updated student data
-        const updatedStudent = action.payload.student;
+        const _updatedStudent = action.payload.student;
       })
       .addCase(enrollStudent.rejected, (state, action) => {
         state.loading = false;
@@ -501,7 +507,7 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(bulkEnrollStudents.fulfilled, (state, action) => {
+      .addCase(bulkEnrollStudents.fulfilled, (state, _action) => {
         state.loading = false;
         state.error = null;
         // Optionally update students list if response contains new students
@@ -514,7 +520,7 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(disableDripForUser.fulfilled, (state, action) => {
+      .addCase(disableDripForUser.fulfilled, (state, _action) => {
         state.loading = false;
       })
       .addCase(disableDripForUser.rejected, (state, action) => {
@@ -527,15 +533,19 @@ const studentSlice = createSlice({
       })
       .addCase(banStudent.fulfilled, (state, action) => {
         state.loading = false;
+        // Mirror backend semantics (userService.banOrShadowBanUser):
+        // ban => isBanned/isActive=false; shadowBan => isShadowBanned/isActive stays true
+        const banUpdate = {
+          status: action.payload.banType,
+          banReason: action.payload.banReason,
+          isBanned: action.payload.banType === "ban",
+          isShadowBanned: action.payload.banType === "shadowBan",
+          isActive: action.payload.banType !== "ban",
+        };
         // Update student in list if present
         state.students = state.students.map((student) =>
           student._id === action.payload.userId
-            ? {
-              ...student,
-              status: action.payload.banType,
-              banReason: action.payload.banReason,
-              isActive: false,
-            }
+            ? { ...student, ...banUpdate }
             : student
         );
         // Update details if present
@@ -543,12 +553,7 @@ const studentSlice = createSlice({
           state.studentDetails &&
           state.studentDetails._id === action.payload.userId
         ) {
-          state.studentDetails = {
-            ...state.studentDetails,
-            status: action.payload.banType,
-            banReason: action.payload.banReason,
-            isActive: false,
-          };
+          state.studentDetails = { ...state.studentDetails, ...banUpdate };
         }
       })
       .addCase(banStudent.rejected, (state, action) => {
@@ -561,15 +566,18 @@ const studentSlice = createSlice({
       })
       .addCase(unbanStudent.fulfilled, (state, action) => {
         state.loading = false;
+        // Mirror backend semantics (userService.unbanUser): clear both flags, reactivate
+        const unbanUpdate = {
+          status: "active",
+          banReason: undefined,
+          isBanned: false,
+          isShadowBanned: false,
+          isActive: true,
+        };
         // Update student in list if present
         state.students = state.students.map((student) =>
           student._id === action.payload.userId
-            ? {
-              ...student,
-              status: "active",
-              banReason: undefined,
-              isActive: true,
-            }
+            ? { ...student, ...unbanUpdate }
             : student
         );
         // Update details if present
@@ -577,12 +585,7 @@ const studentSlice = createSlice({
           state.studentDetails &&
           state.studentDetails._id === action.payload.userId
         ) {
-          state.studentDetails = {
-            ...state.studentDetails,
-            status: "active",
-            banReason: undefined,
-            isActive: true,
-          };
+          state.studentDetails = { ...state.studentDetails, ...unbanUpdate };
         }
       })
       .addCase(unbanStudent.rejected, (state, action) => {
@@ -593,7 +596,7 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(disableDripForModule.fulfilled, (state, action) => {
+      .addCase(disableDripForModule.fulfilled, (state, _action) => {
         state.loading = false;
         // Optionally update state if needed
       })
@@ -617,7 +620,7 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteEnrollment.fulfilled, (state, action) => {
+      .addCase(deleteEnrollment.fulfilled, (state, _action) => {
         state.loading = false;
         // Optionally update student enrollments if tracked in state
       })
@@ -629,7 +632,7 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(logoutAllSessions.fulfilled, (state, action) => {
+      .addCase(logoutAllSessions.fulfilled, (state, _action) => {
         state.loading = false;
         // Optionally update student status if needed
       })
